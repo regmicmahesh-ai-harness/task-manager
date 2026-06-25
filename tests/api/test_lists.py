@@ -130,9 +130,7 @@ async def test_update_list(client: AsyncClient) -> None:
 async def test_update_list_not_found(client: AsyncClient) -> None:
     """Update nonexistent list returns 404."""
     board_id = await _create_board(client)
-    resp = await client.patch(
-        f"/api/v1/boards/{board_id}/lists/nonexist", json={"name": "X"}
-    )
+    resp = await client.patch(f"/api/v1/boards/{board_id}/lists/nonexist", json={"name": "X"})
     assert resp.status_code == 404
 
 
@@ -146,9 +144,7 @@ async def test_update_list_wrong_board(client: AsyncClient) -> None:
     list_id = create.json()["id"]
     board2_resp = await client.post("/api/v1/boards", json={"name": "Other"})
     board2_id = board2_resp.json()["id"]
-    resp = await client.patch(
-        f"/api/v1/boards/{board2_id}/lists/{list_id}", json={"name": "X"}
-    )
+    resp = await client.patch(f"/api/v1/boards/{board2_id}/lists/{list_id}", json={"name": "X"})
     assert resp.status_code == 404
 
 

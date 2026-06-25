@@ -24,9 +24,7 @@ def test_card_list_with_filters(mock_cls: MagicMock) -> None:
     """Card list with filters."""
     mock_cls.return_value.get.return_value = [SAMPLE_CARD]
     runner = CliRunner()
-    result = runner.invoke(
-        cli, ["card", "list", "--list-id", "x", "--status", "todo", "--priority", "high"]
-    )
+    result = runner.invoke(cli, ["card", "list", "--list-id", "x", "--status", "todo", "--priority", "high"])
     assert result.exit_code == 0
 
 
@@ -45,9 +43,7 @@ def test_card_create_with_labels(mock_cls: MagicMock) -> None:
     """Card create with labels."""
     mock_cls.return_value.post.return_value = SAMPLE_CARD
     runner = CliRunner()
-    result = runner.invoke(
-        cli, ["card", "create", "--list-id", "lst1", "--title", "T", "--labels", "bug,urgent"]
-    )
+    result = runner.invoke(cli, ["card", "create", "--list-id", "lst1", "--title", "T", "--labels", "bug,urgent"])
     assert result.exit_code == 0
     call_json = mock_cls.return_value.post.call_args[1]["json"]
     assert call_json["labels"] == ["bug", "urgent"]
@@ -98,9 +94,7 @@ def test_card_bulk_move(mock_cls: MagicMock) -> None:
     """Card bulk-move."""
     mock_cls.return_value.post.return_value = [SAMPLE_CARD]
     runner = CliRunner()
-    result = runner.invoke(
-        cli, ["card", "bulk-move", "--card-ids", "a,b", "--to-list-id", "lst2"]
-    )
+    result = runner.invoke(cli, ["card", "bulk-move", "--card-ids", "a,b", "--to-list-id", "lst2"])
     assert result.exit_code == 0
 
 

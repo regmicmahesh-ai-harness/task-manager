@@ -12,9 +12,7 @@ router = APIRouter(prefix="/boards/{board_id}/lists", tags=["lists"])
 
 
 @router.post("", response_model=ListResponse, status_code=201)
-async def create_list_endpoint(
-    board_id: str, body: ListCreate, db: AsyncSession = Depends(get_db)
-) -> ListResponse:
+async def create_list_endpoint(board_id: str, body: ListCreate, db: AsyncSession = Depends(get_db)) -> ListResponse:
     """Create a new list in a board."""
     board = await get_board(db, board_id)
     if board is None:
@@ -56,9 +54,7 @@ async def list_lists_endpoint(
 
 
 @router.get("/{list_id}", response_model=ListResponse)
-async def get_list_endpoint(
-    board_id: str, list_id: str, db: AsyncSession = Depends(get_db)
-) -> ListResponse:
+async def get_list_endpoint(board_id: str, list_id: str, db: AsyncSession = Depends(get_db)) -> ListResponse:
     """Get a list by ID."""
     lst = await get_list(db, list_id)
     if lst is None or lst.board_id != board_id:
@@ -93,9 +89,7 @@ async def update_list_endpoint(
 
 
 @router.delete("/{list_id}", status_code=204)
-async def delete_list_endpoint(
-    board_id: str, list_id: str, db: AsyncSession = Depends(get_db)
-) -> None:
+async def delete_list_endpoint(board_id: str, list_id: str, db: AsyncSession = Depends(get_db)) -> None:
     """Delete a list."""
     lst = await get_list(db, list_id)
     if lst is None or lst.board_id != board_id:

@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field
 
 from shared.enums import CardPriority, CardStatus
 
-
 # ── Board ──────────────────────────────────────────────────────────
 
 

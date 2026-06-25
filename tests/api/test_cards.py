@@ -7,11 +7,11 @@ async def _setup(client: AsyncClient) -> tuple[str, str]:
     """Create a board and list, return (board_id, list_id)."""
     b = await client.post("/api/v1/boards", json={"name": "Board"})
     board_id = b.json()["id"]
-    l = await client.post(
+    lst = await client.post(
         f"/api/v1/boards/{board_id}/lists",
         json={"name": "To Do", "board_id": board_id},
     )
-    return board_id, l.json()["id"]
+    return board_id, lst.json()["id"]
 
 
 async def test_create_card(client: AsyncClient) -> None:
@@ -42,9 +42,7 @@ async def test_create_card_with_labels(client: AsyncClient) -> None:
 
 async def test_create_card_list_not_found(client: AsyncClient) -> None:
     """Create card with nonexistent list returns 404."""
-    resp = await client.post(
-        "/api/v1/cards", json={"title": "Orphan", "list_id": "nonexist"}
-    )
+    resp = await client.post("/api/v1/cards", json={"title": "Orphan", "list_id": "nonexist"})
     assert resp.status_code == 404
 
 
@@ -89,7 +87,7 @@ async def test_list_cards_filter_by_status(client: AsyncClient) -> None:
     """Filter cards by status."""
     _, list_id = await _setup(client)
     await client.post("/api/v1/cards", json={"title": "Todo", "list_id": list_id})
-    c2 = await client.post(
+    await client.post(
         "/api/v1/cards",
         json={"title": "Done", "list_id": list_id, "status": "done"},
     )
@@ -126,9 +124,7 @@ async def test_list_cards_pagination(client: AsyncClient) -> None:
 async def test_get_card(client: AsyncClient) -> None:
     """Get a card by ID."""
     _, list_id = await _setup(client)
-    create = await client.post(
-        "/api/v1/cards", json={"title": "Get Me", "list_id": list_id}
-    )
+    create = await client.post("/api/v1/cards", json={"title": "Get Me", "list_id": list_id})
     card_id = create.json()["id"]
     resp = await client.get(f"/api/v1/cards/{card_id}")
     assert resp.status_code == 200
@@ -144,9 +140,7 @@ async def test_get_card_not_found(client: AsyncClient) -> None:
 async def test_update_card(client: AsyncClient) -> None:
     """Update card fields."""
     _, list_id = await _setup(client)
-    create = await client.post(
-        "/api/v1/cards", json={"title": "Old", "list_id": list_id}
-    )
+    create = await client.post("/api/v1/cards", json={"title": "Old", "list_id": list_id})
     card_id = create.json()["id"]
     resp = await client.patch(
         f"/api/v1/cards/{card_id}",
@@ -162,13 +156,9 @@ async def test_update_card(client: AsyncClient) -> None:
 async def test_update_card_labels(client: AsyncClient) -> None:
     """Update card labels."""
     _, list_id = await _setup(client)
-    create = await client.post(
-        "/api/v1/cards", json={"title": "Task", "list_id": list_id}
-    )
+    create = await client.post("/api/v1/cards", json={"title": "Task", "list_id": list_id})
     card_id = create.json()["id"]
-    resp = await client.patch(
-        f"/api/v1/cards/{card_id}", json={"labels": ["feature", "v2"]}
-    )
+    resp = await client.patch(f"/api/v1/cards/{card_id}", json={"labels": ["feature", "v2"]})
     assert resp.json()["labels"] == ["feature", "v2"]
 
 
@@ -191,9 +181,7 @@ async def test_move_card(client: AsyncClient) -> None:
         json={"name": "To", "board_id": board_id},
     )
     l1_id, l2_id = l1.json()["id"], l2.json()["id"]
-    create = await client.post(
-        "/api/v1/cards", json={"title": "Move Me", "list_id": l1_id}
-    )
+    create = await client.post("/api/v1/cards", json={"title": "Move Me", "list_id": l1_id})
     card_id = create.json()["id"]
     resp = await client.post(
         f"/api/v1/cards/{card_id}/move",
@@ -206,22 +194,16 @@ async def test_move_card(client: AsyncClient) -> None:
 
 async def test_move_card_not_found(client: AsyncClient) -> None:
     """Move nonexistent card returns 404."""
-    resp = await client.post(
-        "/api/v1/cards/nonexist/move", json={"to_list_id": "x"}
-    )
+    resp = await client.post("/api/v1/cards/nonexist/move", json={"to_list_id": "x"})
     assert resp.status_code == 404
 
 
 async def test_move_card_target_list_not_found(client: AsyncClient) -> None:
     """Move to nonexistent list returns 404."""
     _, list_id = await _setup(client)
-    create = await client.post(
-        "/api/v1/cards", json={"title": "Card", "list_id": list_id}
-    )
+    create = await client.post("/api/v1/cards", json={"title": "Card", "list_id": list_id})
     card_id = create.json()["id"]
-    resp = await client.post(
-        f"/api/v1/cards/{card_id}/move", json={"to_list_id": "nonexist"}
-    )
+    resp = await client.post(f"/api/v1/cards/{card_id}/move", json={"to_list_id": "nonexist"})
     assert resp.status_code == 404
 
 
@@ -262,9 +244,7 @@ async def test_bulk_move_cards_target_not_found(client: AsyncClient) -> None:
 async def test_delete_card(client: AsyncClient) -> None:
     """Delete a card."""
     _, list_id = await _setup(client)
-    create = await client.post(
-        "/api/v1/cards", json={"title": "Delete Me", "list_id": list_id}
-    )
+    create = await client.post("/api/v1/cards", json={"title": "Delete Me", "list_id": list_id})
     card_id = create.json()["id"]
     resp = await client.delete(f"/api/v1/cards/{card_id}")
     assert resp.status_code == 204
@@ -302,9 +282,7 @@ async def test_update_card_due_date(client: AsyncClient) -> None:
     )
     card_id = create.json()["id"]
     # Update to null
-    resp = await client.patch(
-        f"/api/v1/cards/{card_id}", json={"due_date": None}
-    )
+    resp = await client.patch(f"/api/v1/cards/{card_id}", json={"due_date": None})
     assert resp.status_code == 200
     assert resp.json()["due_date"] is None
 
@@ -312,9 +290,7 @@ async def test_update_card_due_date(client: AsyncClient) -> None:
 async def test_update_card_description(client: AsyncClient) -> None:
     """Update card description and position."""
     _, list_id = await _setup(client)
-    create = await client.post(
-        "/api/v1/cards", json={"title": "T", "list_id": list_id}
-    )
+    create = await client.post("/api/v1/cards", json={"title": "T", "list_id": list_id})
     card_id = create.json()["id"]
     resp = await client.patch(
         f"/api/v1/cards/{card_id}",

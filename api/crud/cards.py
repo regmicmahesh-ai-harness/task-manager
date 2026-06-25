@@ -93,9 +93,7 @@ async def update_card(
     return card
 
 
-async def move_card(
-    db: AsyncSession, card: CardModel, to_list_id: str, position: int = 0
-) -> CardModel:
+async def move_card(db: AsyncSession, card: CardModel, to_list_id: str, position: int = 0) -> CardModel:
     """Move a card to a different list."""
     card.list_id = to_list_id
     card.position = position
@@ -105,9 +103,7 @@ async def move_card(
     return card
 
 
-async def bulk_move_cards(
-    db: AsyncSession, card_ids: list[str], to_list_id: str
-) -> list[CardModel]:
+async def bulk_move_cards(db: AsyncSession, card_ids: list[str], to_list_id: str) -> list[CardModel]:
     """Move multiple cards to a different list."""
     stmt = select(CardModel).where(CardModel.id.in_(card_ids))
     result = await db.execute(stmt)

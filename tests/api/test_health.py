@@ -1,5 +1,7 @@
 """Tests for health check endpoint and shared models."""
 
+import contextlib
+
 from httpx import AsyncClient
 
 from shared.enums import CardPriority, CardStatus
@@ -54,10 +56,8 @@ async def test_get_db_dependency() -> None:
     gen = get_db()
     session = await gen.__anext__()
     assert session is not None
-    try:
+    with contextlib.suppress(StopAsyncIteration):
         await gen.__anext__()
-    except StopAsyncIteration:
-        pass
 
 
 async def test_app_lifespan() -> None:

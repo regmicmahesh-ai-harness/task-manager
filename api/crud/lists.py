@@ -8,9 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.db_models import ListModel
 
 
-async def create_list(
-    db: AsyncSession, name: str, board_id: str, position: int = 0
-) -> ListModel:
+async def create_list(db: AsyncSession, name: str, board_id: str, position: int = 0) -> ListModel:
     """Create a new list."""
     lst = ListModel(name=name, board_id=board_id, position=position)
     db.add(lst)
@@ -24,16 +22,10 @@ async def get_list(db: AsyncSession, list_id: str) -> ListModel | None:
     return await db.get(ListModel, list_id)
 
 
-async def get_lists(
-    db: AsyncSession, board_id: str, limit: int = 50, offset: int = 0
-) -> list[ListModel]:
+async def get_lists(db: AsyncSession, board_id: str, limit: int = 50, offset: int = 0) -> list[ListModel]:
     """Get all lists for a board with pagination."""
     stmt = (
-        select(ListModel)
-        .where(ListModel.board_id == board_id)
-        .order_by(ListModel.position)
-        .limit(limit)
-        .offset(offset)
+        select(ListModel).where(ListModel.board_id == board_id).order_by(ListModel.position).limit(limit).offset(offset)
     )
     result = await db.execute(stmt)
     return list(result.scalars().all())

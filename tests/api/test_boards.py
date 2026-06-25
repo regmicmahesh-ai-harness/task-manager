@@ -55,7 +55,7 @@ async def test_list_boards_pagination(client: AsyncClient) -> None:
 
 async def test_list_boards_filter_archived(client: AsyncClient) -> None:
     """Filter by archived status."""
-    r1 = await client.post("/api/v1/boards", json={"name": "Active"})
+    await client.post("/api/v1/boards", json={"name": "Active"})
     r2 = await client.post("/api/v1/boards", json={"name": "Old"})
     await client.patch(f"/api/v1/boards/{r2.json()['id']}", json={"archived": True})
     resp = await client.get("/api/v1/boards", params={"archived": False})

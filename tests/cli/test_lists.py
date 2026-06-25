@@ -22,9 +22,7 @@ def test_list_ls(mock_cls: MagicMock) -> None:
 @patch("cli.commands.lists.APIClient")
 def test_list_create(mock_cls: MagicMock) -> None:
     """List create."""
-    mock_cls.return_value.post.return_value = {
-        "id": "new12345", "name": "Done", "position": 1, "board_id": "brd12345"
-    }
+    mock_cls.return_value.post.return_value = {"id": "new12345", "name": "Done", "position": 1, "board_id": "brd12345"}
     runner = CliRunner()
     result = runner.invoke(cli, ["list", "create", "--board-id", "brd12345", "--name", "Done"])
     assert result.exit_code == 0
@@ -34,9 +32,7 @@ def test_list_create(mock_cls: MagicMock) -> None:
 @patch("cli.commands.lists.APIClient")
 def test_list_get(mock_cls: MagicMock) -> None:
     """List get."""
-    mock_cls.return_value.get.return_value = {
-        "id": "lst12345", "name": "Doing", "position": 1, "board_id": "brd12345"
-    }
+    mock_cls.return_value.get.return_value = {"id": "lst12345", "name": "Doing", "position": 1, "board_id": "brd12345"}
     runner = CliRunner()
     result = runner.invoke(cli, ["list", "get", "--board-id", "brd12345", "lst12345"])
     assert result.exit_code == 0
@@ -47,7 +43,10 @@ def test_list_get(mock_cls: MagicMock) -> None:
 def test_list_update(mock_cls: MagicMock) -> None:
     """List update."""
     mock_cls.return_value.patch.return_value = {
-        "id": "lst12345", "name": "Updated", "position": 2, "board_id": "brd12345"
+        "id": "lst12345",
+        "name": "Updated",
+        "position": 2,
+        "board_id": "brd12345",
     }
     runner = CliRunner()
     result = runner.invoke(cli, ["list", "update", "--board-id", "brd12345", "lst12345", "--name", "Updated"])

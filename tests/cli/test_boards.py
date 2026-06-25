@@ -10,9 +10,7 @@ from cli.main import cli
 @patch("cli.commands.boards.APIClient")
 def test_board_list(mock_cls: MagicMock) -> None:
     """Board list outputs terse format."""
-    mock_cls.return_value.get.return_value = [
-        {"id": "abc12345", "name": "Sprint", "archived": False}
-    ]
+    mock_cls.return_value.get.return_value = [{"id": "abc12345", "name": "Sprint", "archived": False}]
     runner = CliRunner()
     result = runner.invoke(cli, ["board", "list"])
     assert result.exit_code == 0

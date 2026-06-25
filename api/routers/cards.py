@@ -24,7 +24,7 @@ def _card_to_response(card: object) -> CardResponse:
     from api.db_models import CardModel
 
     assert isinstance(card, CardModel)
-    labels = [l.strip() for l in card.labels.split(",") if l.strip()] if card.labels else []
+    labels = [lb.strip() for lb in card.labels.split(",") if lb.strip()] if card.labels else []
     return CardResponse(
         id=card.id,
         title=card.title,
@@ -41,9 +41,7 @@ def _card_to_response(card: object) -> CardResponse:
 
 
 @router.post("", response_model=CardResponse, status_code=201)
-async def create_card_endpoint(
-    body: CardCreate, db: AsyncSession = Depends(get_db)
-) -> CardResponse:
+async def create_card_endpoint(body: CardCreate, db: AsyncSession = Depends(get_db)) -> CardResponse:
     """Create a new card."""
     lst = await get_list(db, body.list_id)
     if lst is None:
@@ -73,16 +71,12 @@ async def list_cards_endpoint(
     db: AsyncSession = Depends(get_db),
 ) -> list[CardResponse]:
     """List cards with optional filtering."""
-    cards = await get_cards(
-        db, list_id=list_id, status=status, priority=priority, limit=limit, offset=offset
-    )
+    cards = await get_cards(db, list_id=list_id, status=status, priority=priority, limit=limit, offset=offset)
     return [_card_to_response(c) for c in cards]
 
 
 @router.get("/{card_id}", response_model=CardResponse)
-async def get_card_endpoint(
-    card_id: str, db: AsyncSession = Depends(get_db)
-) -> CardResponse:
+async def get_card_endpoint(card_id: str, db: AsyncSession = Depends(get_db)) -> CardResponse:
     """Get a card by ID."""
     card = await get_card(db, card_id)
     if card is None:
@@ -91,9 +85,7 @@ async def get_card_endpoint(
 
 
 @router.patch("/{card_id}", response_model=CardResponse)
-async def update_card_endpoint(
-    card_id: str, body: CardUpdate, db: AsyncSession = Depends(get_db)
-) -> CardResponse:
+async def update_card_endpoint(card_id: str, body: CardUpdate, db: AsyncSession = Depends(get_db)) -> CardResponse:
     """Update a card."""
     card = await get_card(db, card_id)
     if card is None:
@@ -118,9 +110,7 @@ async def update_card_endpoint(
 
 
 @router.post("/{card_id}/move", response_model=CardResponse)
-async def move_card_endpoint(
-    card_id: str, body: CardMove, db: AsyncSession = Depends(get_db)
-) -> CardResponse:
+async def move_card_endpoint(card_id: str, body: CardMove, db: AsyncSession = Depends(get_db)) -> CardResponse:
     """Move a card to a different list."""
     card = await get_card(db, card_id)
     if card is None:
@@ -133,9 +123,7 @@ async def move_card_endpoint(
 
 
 @router.post("/bulk", response_model=list[CardResponse])
-async def bulk_move_cards_endpoint(
-    body: BulkCardMove, db: AsyncSession = Depends(get_db)
-) -> list[CardResponse]:
+async def bulk_move_cards_endpoint(body: BulkCardMove, db: AsyncSession = Depends(get_db)) -> list[CardResponse]:
     """Move multiple cards to a different list."""
     target_list = await get_list(db, body.to_list_id)
     if target_list is None:
@@ -145,9 +133,7 @@ async def bulk_move_cards_endpoint(
 
 
 @router.delete("/{card_id}", status_code=204)
-async def delete_card_endpoint(
-    card_id: str, db: AsyncSession = Depends(get_db)
-) -> None:
+async def delete_card_endpoint(card_id: str, db: AsyncSession = Depends(get_db)) -> None:
     """Delete a card."""
     card = await get_card(db, card_id)
     if card is None:

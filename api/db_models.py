@@ -35,9 +35,7 @@ class BoardModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
-    lists: Mapped[list["ListModel"]] = relationship(
-        back_populates="board", cascade="all, delete-orphan"
-    )
+    lists: Mapped[list["ListModel"]] = relationship(back_populates="board", cascade="all, delete-orphan")
 
 
 class ListModel(Base):
@@ -55,9 +53,7 @@ class ListModel(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     board: Mapped["BoardModel"] = relationship(back_populates="lists")
-    cards: Mapped[list["CardModel"]] = relationship(
-        back_populates="list_", cascade="all, delete-orphan"
-    )
+    cards: Mapped[list["CardModel"]] = relationship(back_populates="list_", cascade="all, delete-orphan")
 
 
 class CardModel(Base):

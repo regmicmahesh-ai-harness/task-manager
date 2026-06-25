@@ -69,7 +69,7 @@ def create_card(
         "status": status,
     }
     if labels:
-        body["labels"] = [l.strip() for l in labels.split(",")]
+        body["labels"] = [lb.strip() for lb in labels.split(",")]
     data = client.post("/cards", json=body)
     output(data, CARD_COLS, as_json=ctx.obj["json"], single=True)
 
@@ -113,7 +113,7 @@ def update_card(
     if status is not None:
         body["status"] = status
     if labels is not None:
-        body["labels"] = [l.strip() for l in labels.split(",")]
+        body["labels"] = [lb.strip() for lb in labels.split(",")]
     data = client.patch(f"/cards/{card_id}", json=body)
     output(data, CARD_COLS, as_json=ctx.obj["json"], single=True)
 

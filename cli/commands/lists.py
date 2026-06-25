@@ -58,9 +58,7 @@ def get_list(ctx: click.Context, board_id: str, list_id: str) -> None:
 @click.option("--name", default=None)
 @click.option("--position", type=int, default=None)
 @click.pass_context
-def update_list(
-    ctx: click.Context, board_id: str, list_id: str, name: str | None, position: int | None
-) -> None:
+def update_list(ctx: click.Context, board_id: str, list_id: str, name: str | None, position: int | None) -> None:
     """Update a list."""
     client = APIClient(ctx.obj["api_url"])
     body: dict[str, object] = {}
