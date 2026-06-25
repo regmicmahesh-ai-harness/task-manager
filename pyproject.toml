@@ -47,6 +47,7 @@ plugins = ["pydantic.mypy"]
 
 [tool.coverage.run]
 source = ["api", "shared"]
+core = "sysmon"
 
 [tool.coverage.report]
 fail_under = 100
