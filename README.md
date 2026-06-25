@@ -82,7 +82,13 @@ All under `/api/v1/`:
 
 ## Use as a Grok Skill
 
-Install the task manager as a Grok skill so any AI agent can manage tasks from any project:
+One-line install:
+
+```bash
+curl -sL https://raw.githubusercontent.com/regmicmahesh-ai-harness/task-manager/main/install-skill.sh | bash
+```
+
+Or manually:
 
 ```bash
 # 1. Install the package
