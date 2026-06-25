@@ -21,24 +21,13 @@ Three interfaces available:
 
 ## Setup
 
-Everything runs from the project directory — no global installation. The
-virtual environment lives inside the repo, so removing the skill directory
-cleans up everything.
+All scripts live in `scripts/` next to this file. Nothing is installed
+globally — the virtual environment lives inside the repo. Removing the
+skill directory cleans up everything.
 
 ```bash
-# One-time: install dependencies (creates .venv/ in project dir)
-SKILL_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"  # repo root
-cd "$SKILL_DIR" && uv sync
-```
-
-When invoking from any working directory, use `--project` to point at the
-repo root. All examples below use a `TASK` alias for brevity:
-
-```bash
-TASK_PROJECT="<path-to-this-repo>"
-alias task="uv run --project $TASK_PROJECT task"
-alias task-server="uv run --project $TASK_PROJECT task-server"
-alias task-tui="uv run --project $TASK_PROJECT task-tui"
+# One-time: install dependencies (creates .venv/ in the repo)
+.grok/skills/task-manager/scripts/setup.sh
 ```
 
 ### Starting the server (singleton, Unix socket)
@@ -47,17 +36,12 @@ The API server listens on a **Unix domain socket** at
 `~/.local/share/task-manager/task_manager.sock` — no TCP port needed.
 
 **IMPORTANT — singleton server:** Only ONE instance of the server should run
-at a time, even if multiple models or skill invocations are active. Always
-check before starting:
+at a time, even if multiple models or skill invocations are active. The
+script handles this automatically:
 
 ```bash
-PID_FILE="$HOME/.local/share/task-manager/server.pid"
-
-if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-  : # Server already running — do nothing
-else
-  uv run --project "$TASK_PROJECT" task-server &
-fi
+.grok/skills/task-manager/scripts/start-server.sh   # safe to call repeatedly
+.grok/skills/task-manager/scripts/stop-server.sh     # stop when done
 ```
 
 To verify the server is reachable:
@@ -67,53 +51,54 @@ curl --unix-socket ~/.local/share/task-manager/task_manager.sock \
   http://localhost/api/v1/health
 ```
 
-## Entry Points
+## Scripts
 
-All commands are run via `uv run --project <repo-root>`:
+All scripts auto-resolve the repo root — call them from any directory.
 
-| Command | Purpose |
-|---------|---------|
-| `uv run --project <repo> task-server` | Start API server on Unix socket (singleton) |
-| `uv run --project <repo> task` | CLI for AI agents (terse tab-separated output) |
-| `uv run --project <repo> task-tui` | Interactive terminal UI with vim navigation |
+| Script | Purpose |
+|--------|---------|
+| `scripts/setup.sh` | One-time dependency install (creates `.venv/`) |
+| `scripts/start-server.sh` | Start API server (singleton, safe to re-call) |
+| `scripts/stop-server.sh` | Stop the API server |
+| `scripts/task.sh` | CLI wrapper — pass any `task` args after it |
+| `scripts/task-tui.sh` | Launch the interactive TUI |
 
 ## CLI Reference
 
 Output is terse tab-separated by default. Add `--json` before the subcommand
-for JSON output. Examples below assume the `task` alias from Setup, or
-substitute `uv run --project <repo> task`.
+for JSON output.
 
 ### Boards
 
 ```bash
-task board list                              # List all boards
-task board create --name "Project X"         # Create (auto-creates To Do/In Progress/Done columns)
-task board get <board_id>                    # Get board details
-task board update <board_id> --name "New"    # Rename board
-task board delete <board_id>                 # Delete board
+.grok/skills/task-manager/scripts/task.sh board list                              # List all boards
+.grok/skills/task-manager/scripts/task.sh board create --name "Project X"         # Create board
+.grok/skills/task-manager/scripts/task.sh board get <board_id>                    # Get board details
+.grok/skills/task-manager/scripts/task.sh board update <board_id> --name "New"    # Rename board
+.grok/skills/task-manager/scripts/task.sh board delete <board_id>                 # Delete board
 ```
 
 ### Lists (columns within a board)
 
 ```bash
-task list ls --board-id <board_id>                              # List all lists
-task list create --board-id <board_id> --name "Backlog"         # Create list
-task list get --board-id <board_id> <list_id>                   # Get list
-task list update --board-id <board_id> <list_id> --name "Done"  # Update list
-task list delete --board-id <board_id> <list_id>                # Delete list
+.grok/skills/task-manager/scripts/task.sh list ls --board-id <board_id>                              # List all lists
+.grok/skills/task-manager/scripts/task.sh list create --board-id <board_id> --name "Backlog"         # Create list
+.grok/skills/task-manager/scripts/task.sh list get --board-id <board_id> <list_id>                   # Get list
+.grok/skills/task-manager/scripts/task.sh list update --board-id <board_id> <list_id> --name "Done"  # Update list
+.grok/skills/task-manager/scripts/task.sh list delete --board-id <board_id> <list_id>                # Delete list
 ```
 
 ### Cards (tasks within a list)
 
 ```bash
-task card list                                                     # List all cards
-task card list --list-id <id> --priority high                      # Filter cards
-task card create --list-id <id> --title "Fix bug" --priority high  # Create card
-task card get <card_id>                                            # Get card
-task card update <card_id> --title "New title"                     # Update card
-task card move <card_id> --to-list-id <list_id>                    # Move card
-task card bulk-move --card-ids "id1,id2" --to-list-id <list_id>    # Bulk move
-task card delete <card_id>                                         # Delete card
+.grok/skills/task-manager/scripts/task.sh card list                                                     # List all cards
+.grok/skills/task-manager/scripts/task.sh card list --list-id <id> --priority high                      # Filter cards
+.grok/skills/task-manager/scripts/task.sh card create --list-id <id> --title "Fix bug" --priority high  # Create card
+.grok/skills/task-manager/scripts/task.sh card get <card_id>                                            # Get card
+.grok/skills/task-manager/scripts/task.sh card update <card_id> --title "New title"                     # Update card
+.grok/skills/task-manager/scripts/task.sh card move <card_id> --to-list-id <list_id>                    # Move card
+.grok/skills/task-manager/scripts/task.sh card bulk-move --card-ids "id1,id2" --to-list-id <list_id>    # Bulk move
+.grok/skills/task-manager/scripts/task.sh card delete <card_id>                                         # Delete card
 ```
 
 ### Card options
@@ -124,9 +109,8 @@ task card delete <card_id>                                         # Delete card
 
 ## TUI Reference
 
-Launch with `task-tui` (or `uv run --project <repo> task-tui`).
-Keyboard-only, vim-style navigation. Arrow keys also work everywhere
-alongside hjkl.
+Launch with `scripts/task-tui.sh`. Keyboard-only, vim-style navigation.
+Arrow keys also work everywhere alongside hjkl.
 
 ### Three-tier navigation
 
@@ -161,27 +145,28 @@ alongside hjkl.
 ### Set up a new project board
 
 ```bash
-task board create --name "My Project"
+TASK=".grok/skills/task-manager/scripts/task.sh"
+$TASK board create --name "My Project"
 # Default columns (To Do, In Progress, Done) are auto-created
 ```
 
 ### Create and track tasks
 
 ```bash
-task card create --list-id <todo_list_id> --title "Implement feature X" --priority high
-task card create --list-id <todo_list_id> --title "Write tests" --priority medium
+$TASK card create --list-id <todo_list_id> --title "Implement feature X" --priority high
+$TASK card create --list-id <todo_list_id> --title "Write tests" --priority medium
 # Move to in-progress when starting work
-task card move <card_id> --to-list-id <in_progress_list_id>
+$TASK card move <card_id> --to-list-id <in_progress_list_id>
 # Move to done when complete
-task card move <card_id> --to-list-id <done_list_id>
+$TASK card move <card_id> --to-list-id <done_list_id>
 ```
 
 ### Check current status
 
 ```bash
-task --json card list --list-id <todo_list_id>       # What's pending
-task --json card list --list-id <in_progress_id>     # What's active
-task --json card list --priority urgent               # What's urgent
+$TASK --json card list --list-id <todo_list_id>       # What's pending
+$TASK --json card list --list-id <in_progress_id>     # What's active
+$TASK --json card list --priority urgent               # What's urgent
 ```
 
 ## Output Format
