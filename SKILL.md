@@ -27,7 +27,7 @@ skill directory cleans up everything.
 
 ```bash
 # One-time: install dependencies (creates .venv/ in the repo)
-.grok/skills/task-manager/scripts/setup.sh
+scripts/setup.sh
 ```
 
 ### Starting the server (singleton, Unix socket)
@@ -40,8 +40,8 @@ at a time, even if multiple models or skill invocations are active. The
 script handles this automatically:
 
 ```bash
-.grok/skills/task-manager/scripts/start-server.sh   # safe to call repeatedly
-.grok/skills/task-manager/scripts/stop-server.sh     # stop when done
+scripts/start-server.sh   # safe to call repeatedly
+scripts/stop-server.sh     # stop when done
 ```
 
 To verify the server is reachable:
@@ -71,34 +71,34 @@ for JSON output.
 ### Boards
 
 ```bash
-.grok/skills/task-manager/scripts/task.sh board list                              # List all boards
-.grok/skills/task-manager/scripts/task.sh board create --name "Project X"         # Create board
-.grok/skills/task-manager/scripts/task.sh board get <board_id>                    # Get board details
-.grok/skills/task-manager/scripts/task.sh board update <board_id> --name "New"    # Rename board
-.grok/skills/task-manager/scripts/task.sh board delete <board_id>                 # Delete board
+scripts/task.sh board list                              # List all boards
+scripts/task.sh board create --name "Project X"         # Create board
+scripts/task.sh board get <board_id>                    # Get board details
+scripts/task.sh board update <board_id> --name "New"    # Rename board
+scripts/task.sh board delete <board_id>                 # Delete board
 ```
 
 ### Lists (columns within a board)
 
 ```bash
-.grok/skills/task-manager/scripts/task.sh list ls --board-id <board_id>                              # List all lists
-.grok/skills/task-manager/scripts/task.sh list create --board-id <board_id> --name "Backlog"         # Create list
-.grok/skills/task-manager/scripts/task.sh list get --board-id <board_id> <list_id>                   # Get list
-.grok/skills/task-manager/scripts/task.sh list update --board-id <board_id> <list_id> --name "Done"  # Update list
-.grok/skills/task-manager/scripts/task.sh list delete --board-id <board_id> <list_id>                # Delete list
+scripts/task.sh list ls --board-id <board_id>                              # List all lists
+scripts/task.sh list create --board-id <board_id> --name "Backlog"         # Create list
+scripts/task.sh list get --board-id <board_id> <list_id>                   # Get list
+scripts/task.sh list update --board-id <board_id> <list_id> --name "Done"  # Update list
+scripts/task.sh list delete --board-id <board_id> <list_id>                # Delete list
 ```
 
 ### Cards (tasks within a list)
 
 ```bash
-.grok/skills/task-manager/scripts/task.sh card list                                                     # List all cards
-.grok/skills/task-manager/scripts/task.sh card list --list-id <id> --priority high                      # Filter cards
-.grok/skills/task-manager/scripts/task.sh card create --list-id <id> --title "Fix bug" --priority high  # Create card
-.grok/skills/task-manager/scripts/task.sh card get <card_id>                                            # Get card
-.grok/skills/task-manager/scripts/task.sh card update <card_id> --title "New title"                     # Update card
-.grok/skills/task-manager/scripts/task.sh card move <card_id> --to-list-id <list_id>                    # Move card
-.grok/skills/task-manager/scripts/task.sh card bulk-move --card-ids "id1,id2" --to-list-id <list_id>    # Bulk move
-.grok/skills/task-manager/scripts/task.sh card delete <card_id>                                         # Delete card
+scripts/task.sh card list                                                     # List all cards
+scripts/task.sh card list --list-id <id> --priority high                      # Filter cards
+scripts/task.sh card create --list-id <id> --title "Fix bug" --priority high  # Create card
+scripts/task.sh card get <card_id>                                            # Get card
+scripts/task.sh card update <card_id> --title "New title"                     # Update card
+scripts/task.sh card move <card_id> --to-list-id <list_id>                    # Move card
+scripts/task.sh card bulk-move --card-ids "id1,id2" --to-list-id <list_id>    # Bulk move
+scripts/task.sh card delete <card_id>                                         # Delete card
 ```
 
 ### Card options
@@ -145,7 +145,7 @@ Arrow keys also work everywhere alongside hjkl.
 ### Set up a new project board
 
 ```bash
-TASK=".grok/skills/task-manager/scripts/task.sh"
+TASK="scripts/task.sh"
 $TASK board create --name "My Project"
 # Default columns (To Do, In Progress, Done) are auto-created
 ```

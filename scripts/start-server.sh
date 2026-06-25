@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Start the task-manager API server (singleton — safe to call multiple times).
 set -euo pipefail
-REPO_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PID_FILE="$HOME/.local/share/task-manager/server.pid"
 
 if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
