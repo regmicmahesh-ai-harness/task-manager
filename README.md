@@ -20,6 +20,7 @@ uvicorn api.main:app --reload
 |---------|------|---------|
 | API | `api/` | FastAPI + Pydantic REST API |
 | CLI | `cli/` | Lean Click CLI for AI agents |
+| TUI | `tui/` | Textual-based Trello-like terminal UI |
 | Shared | `shared/` | Pydantic models & schemas |
 
 ## CLI Usage
@@ -79,6 +80,47 @@ All under `/api/v1/`:
 | POST | `/cards/{id}/move` | Move card |
 | POST | `/cards/bulk` | Bulk move cards |
 | DELETE | `/cards/{id}` | Delete card |
+
+## TUI (Terminal UI)
+
+A real-time Trello-like board view for your terminal. While AI agents use the CLI, you can watch progress live in the TUI.
+
+```bash
+# Start the API first
+uvicorn api.main:app --reload &
+
+# Launch the TUI
+task-tui
+```
+
+The TUI auto-refreshes every 2 seconds — cards created or moved by agents appear in real time.
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `n` | Next board |
+| `p` | Previous board |
+| `r` | Manual refresh |
+| `q` | Quit |
+
+### What You'll See
+
+```
+◀ Board 1/2: Sprint 1 ▶
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│   To Do (3)  │ │ In Progress  │ │   Done (1)   │
+│              │ │    (1)       │ │              │
+│ ○ Fix login  │ │ ◐ Add auth   │ │ ● Deploy v1  │
+│   [high]     │ │   [urgent]   │ │   [medium]   │
+│              │ │              │ │              │
+│ ○ Write docs │ │              │ │              │
+│   [medium]   │ │              │ │              │
+│              │ │              │ │              │
+│ ○ Refactor   │ │              │ │              │
+│   [low]      │ │              │ │              │
+└──────────────┘ └──────────────┘ └──────────────┘
+```
 
 ## Use as a Grok Skill
 
