@@ -21,7 +21,7 @@ def list_cmd() -> None:
 @click.pass_context
 def list_lists(ctx: click.Context, board_id: str, limit: int, offset: int) -> None:
     """List all lists in a board."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     data = client.get(f"/boards/{board_id}/lists", params={"limit": limit, "offset": offset})
     output(data, LIST_COLS, as_json=ctx.obj["json"])
 
@@ -33,7 +33,7 @@ def list_lists(ctx: click.Context, board_id: str, limit: int, offset: int) -> No
 @click.pass_context
 def create_list(ctx: click.Context, board_id: str, name: str, position: int) -> None:
     """Create a list."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     data = client.post(
         f"/boards/{board_id}/lists",
         json={"name": name, "board_id": board_id, "position": position},
@@ -47,7 +47,7 @@ def create_list(ctx: click.Context, board_id: str, name: str, position: int) -> 
 @click.pass_context
 def get_list(ctx: click.Context, board_id: str, list_id: str) -> None:
     """Get a list by ID."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     data = client.get(f"/boards/{board_id}/lists/{list_id}")
     output(data, LIST_COLS, as_json=ctx.obj["json"], single=True)
 
@@ -60,7 +60,7 @@ def get_list(ctx: click.Context, board_id: str, list_id: str) -> None:
 @click.pass_context
 def update_list(ctx: click.Context, board_id: str, list_id: str, name: str | None, position: int | None) -> None:
     """Update a list."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     body: dict[str, object] = {}
     if name is not None:
         body["name"] = name
@@ -76,6 +76,6 @@ def update_list(ctx: click.Context, board_id: str, list_id: str, name: str | Non
 @click.pass_context
 def delete_list(ctx: click.Context, board_id: str, list_id: str) -> None:
     """Delete a list."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     client.delete(f"/boards/{board_id}/lists/{list_id}")
     click.echo(f"Deleted {list_id}")

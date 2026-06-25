@@ -21,7 +21,7 @@ def board() -> None:
 @click.pass_context
 def list_boards(ctx: click.Context, archived: bool | None, limit: int, offset: int) -> None:
     """List all boards."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     params: dict[str, object] = {"limit": limit, "offset": offset}
     if archived is not None:
         params["archived"] = archived
@@ -35,7 +35,7 @@ def list_boards(ctx: click.Context, archived: bool | None, limit: int, offset: i
 @click.pass_context
 def create_board(ctx: click.Context, name: str, description: str) -> None:
     """Create a board."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     data = client.post("/boards", json={"name": name, "description": description})
     output(data, BOARD_COLS, as_json=ctx.obj["json"], single=True)
 
@@ -45,7 +45,7 @@ def create_board(ctx: click.Context, name: str, description: str) -> None:
 @click.pass_context
 def get_board(ctx: click.Context, board_id: str) -> None:
     """Get a board by ID."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     data = client.get(f"/boards/{board_id}")
     output(data, BOARD_COLS, as_json=ctx.obj["json"], single=True)
 
@@ -60,7 +60,7 @@ def update_board(
     ctx: click.Context, board_id: str, name: str | None, description: str | None, archived: bool | None
 ) -> None:
     """Update a board."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     body: dict[str, object] = {}
     if name is not None:
         body["name"] = name
@@ -77,6 +77,6 @@ def update_board(
 @click.pass_context
 def delete_board(ctx: click.Context, board_id: str) -> None:
     """Delete a board."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     client.delete(f"/boards/{board_id}")
     click.echo(f"Deleted {board_id}")

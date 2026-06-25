@@ -28,7 +28,7 @@ def list_cards(
     offset: int,
 ) -> None:
     """List cards."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     params: dict[str, object] = {"limit": limit, "offset": offset}
     if list_id:
         params["list_id"] = list_id
@@ -54,7 +54,7 @@ def create_card(
     labels: str | None,
 ) -> None:
     """Create a card."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     body: dict[str, object] = {
         "title": title,
         "list_id": list_id,
@@ -72,7 +72,7 @@ def create_card(
 @click.pass_context
 def get_card(ctx: click.Context, card_id: str) -> None:
     """Get a card by ID."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     data = client.get(f"/cards/{card_id}")
     output(data, CARD_COLS, as_json=ctx.obj["json"], single=True)
 
@@ -93,7 +93,7 @@ def update_card(
     labels: str | None,
 ) -> None:
     """Update a card."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     body: dict[str, object] = {}
     if title is not None:
         body["title"] = title
@@ -114,7 +114,7 @@ def update_card(
 @click.pass_context
 def move_card(ctx: click.Context, card_id: str, to_list_id: str, position: int) -> None:
     """Move a card to a different list."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     data = client.post(
         f"/cards/{card_id}/move",
         json={"to_list_id": to_list_id, "position": position},
@@ -128,7 +128,7 @@ def move_card(ctx: click.Context, card_id: str, to_list_id: str, position: int) 
 @click.pass_context
 def bulk_move_cards(ctx: click.Context, card_ids: str, to_list_id: str) -> None:
     """Move multiple cards to a list."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     ids = [c.strip() for c in card_ids.split(",")]
     data = client.post("/cards/bulk", json={"card_ids": ids, "to_list_id": to_list_id})
     output(data, CARD_COLS, as_json=ctx.obj["json"])
@@ -139,6 +139,6 @@ def bulk_move_cards(ctx: click.Context, card_ids: str, to_list_id: str) -> None:
 @click.pass_context
 def delete_card(ctx: click.Context, card_id: str) -> None:
     """Delete a card."""
-    client = APIClient(ctx.obj["api_url"])
+    client = APIClient()
     client.delete(f"/cards/{card_id}")
     click.echo(f"Deleted {card_id}")
