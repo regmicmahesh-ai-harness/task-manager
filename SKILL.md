@@ -1,190 +1,236 @@
 ---
 name: task-manager
 description: >
-  Manage tasks, boards, lists, and cards using the Task Manager API and CLI.
+  File-based task manager. Boards are folders, tasks are YAML files.
+  Status is the filename prefix: todo_, in_progress_, done_.
+  No server, no dependencies — just files.
   Use when: the user wants to create tasks, manage a todo list, organize work
-  into boards/lists/cards, move tasks between columns, track task status, or
-  runs /task-manager. Trigger keywords: "task", "todo", "board", "card",
-  "create task", "move task", "task list", "manage tasks", "kanban".
+  into boards, move tasks between statuses, or runs /task-manager.
+  Trigger keywords: "task", "todo", "board", "card", "create task",
+  "move task", "task list", "manage tasks", "kanban".
 ---
 
 # Task Manager Skill
 
-A Trello-like task manager with boards, lists (columns), and cards.
-Columns ARE the status — moving a card between columns changes its status.
-Creating a board auto-creates default columns: To Do, In Progress, Done.
+A file-based task manager. No server, no CLI, no dependencies. Just folders
+and YAML files that any LLM can read and write directly.
 
-Three interfaces available:
-- **CLI** (`task`) — terse output optimized for AI agents
-- **TUI** (`task-tui`) — interactive vim-style terminal UI
-- **API** — Unix socket, no TCP port
+- **Boards** = folders under `./todos/`
+- **Tasks** = YAML files inside a board folder
+- **Status** = the filename prefix (`todo_`, `in_progress_`, `done_`)
+
+Moving a task between statuses = renaming the file.
 
 ## Setup
 
-All scripts live in `scripts/` next to this file. Nothing is installed
-globally — the virtual environment lives inside the repo. Removing the
-skill directory cleans up everything.
+None. Create a `todos/` directory in your project root when you need it:
 
 ```bash
-# One-time: install dependencies (creates .venv/ in the repo)
-scripts/setup.sh
+mkdir -p todos
 ```
 
-### Starting the server (singleton, Unix socket)
+## Directory Structure
 
-The API server listens on a **Unix domain socket** at
-`~/.local/share/task-manager/task_manager.sock` — no TCP port needed.
-
-**IMPORTANT — singleton server:** Only ONE instance of the server should run
-at a time, even if multiple models or skill invocations are active. The
-script handles this automatically:
-
-```bash
-scripts/start-server.sh   # safe to call repeatedly
-scripts/stop-server.sh     # stop when done
+```
+<project-root>/
+└── todos/
+    ├── my_project/
+    │   ├── todo_implement-auth.yaml
+    │   ├── todo_write-tests.yaml
+    │   ├── in_progress_fix-login-bug.yaml
+    │   └── done_setup-ci.yaml
+    └── backend_refactor/
+        ├── todo_migrate-to-postgres.yaml
+        └── in_progress_update-orm-models.yaml
 ```
 
-To verify the server is reachable:
+## Naming Convention
 
-```bash
-curl --unix-socket ~/.local/share/task-manager/task_manager.sock \
-  http://localhost/api/v1/health
-```
+### Board folders
 
-## Scripts
+- Location: `todos/<board_name>/`
+- Use `snake_case` for folder names
+- Create the folder to create a board, delete it to delete a board
 
-All scripts auto-resolve the repo root — call them from any directory.
+### Task files
 
-| Script | Purpose |
+Filename format: `<status>_<slug>.yaml`
+
+| Prefix | Meaning |
 |--------|---------|
-| `scripts/setup.sh` | One-time dependency install (creates `.venv/`) |
-| `scripts/start-server.sh` | Start API server (singleton, safe to re-call) |
-| `scripts/stop-server.sh` | Stop the API server |
-| `scripts/task.sh` | CLI wrapper — pass any `task` args after it |
-| `scripts/task-tui.sh` | Launch the interactive TUI |
+| `todo_` | Not started |
+| `in_progress_` | Currently being worked on |
+| `done_` | Completed |
 
-## CLI Reference
+- `<slug>` is a short, descriptive `kebab-case` identifier
+- Example: `todo_fix-payment-flow.yaml`, `in_progress_add-retry-logic.yaml`
 
-Output is terse tab-separated by default. Add `--json` before the subcommand
-for JSON output.
+## Task File Format
 
-### Boards
+Each task is a YAML file with these fields:
 
-```bash
-scripts/task.sh board list                              # List all boards
-scripts/task.sh board create --name "Project X"         # Create board
-scripts/task.sh board get <board_id>                    # Get board details
-scripts/task.sh board update <board_id> --name "New"    # Rename board
-scripts/task.sh board delete <board_id>                 # Delete board
+```yaml
+title: Fix the payment flow
+description: |
+  Users are getting a 500 error when submitting payment with
+  international cards. Need to handle currency conversion.
+priority: high
+labels:
+  - bug
+  - payments
+created: 2026-06-26
+due: 2026-07-01
 ```
 
-### Lists (columns within a board)
+### Fields
+
+| Field | Required | Type | Notes |
+|-------|----------|------|-------|
+| `title` | yes | string | Short, descriptive title |
+| `description` | no | string | Detailed description (use `\|` for multiline) |
+| `priority` | no | string | `low`, `medium` (default), `high`, `urgent` |
+| `labels` | no | list | Freeform tags |
+| `created` | yes | date | `YYYY-MM-DD` — set when creating |
+| `due` | no | date | `YYYY-MM-DD` — optional deadline |
+
+## Operations
+
+### Create a board
 
 ```bash
-scripts/task.sh list ls --board-id <board_id>                              # List all lists
-scripts/task.sh list create --board-id <board_id> --name "Backlog"         # Create list
-scripts/task.sh list get --board-id <board_id> <list_id>                   # Get list
-scripts/task.sh list update --board-id <board_id> <list_id> --name "Done"  # Update list
-scripts/task.sh list delete --board-id <board_id> <list_id>                # Delete list
+mkdir -p todos/my_project
 ```
 
-### Cards (tasks within a list)
+### Delete a board
 
 ```bash
-scripts/task.sh card list                                                     # List all cards
-scripts/task.sh card list --list-id <id> --priority high                      # Filter cards
-scripts/task.sh card create --list-id <id> --title "Fix bug" --priority high  # Create card
-scripts/task.sh card get <card_id>                                            # Get card
-scripts/task.sh card update <card_id> --title "New title"                     # Update card
-scripts/task.sh card move <card_id> --to-list-id <list_id>                    # Move card
-scripts/task.sh card bulk-move --card-ids "id1,id2" --to-list-id <list_id>    # Bulk move
-scripts/task.sh card delete <card_id>                                         # Delete card
+rm -rf todos/my_project
 ```
 
-### Card options
+### Create a task
 
-- `--priority`: low, medium (default), high, urgent
-- `--labels`: Comma-separated labels, e.g. "bug,urgent"
-- `--description`: Task description text
+Write a YAML file with the `todo_` prefix:
 
-## TUI Reference
+```bash
+cat > todos/my_project/todo_fix-login.yaml << 'EOF'
+title: Fix login bug
+description: Users can't log in with special characters in password
+priority: high
+labels:
+  - bug
+  - auth
+created: 2026-06-26
+EOF
+```
 
-Launch with `scripts/task-tui.sh`. Keyboard-only, vim-style navigation.
-Arrow keys also work everywhere alongside hjkl.
+### Move a task (change status)
 
-### Three-tier navigation
+Rename the file prefix:
 
-| Level | h / ← | l / → | j / ↓ / Enter | k / ↑ / Esc |
-|-------|--------|-------|---------------|-------------|
-| **Board** | Prev board | Next board | Dive into columns | — |
-| **Column** | Prev column | Next column | Dive into cards | Back to board |
-| **Card** | — | — | Next card | Prev card (k/↑), Esc=back to column |
+```bash
+# Start working on it
+mv todos/my_project/todo_fix-login.yaml todos/my_project/in_progress_fix-login.yaml
 
-### Card actions (when focused on a card)
+# Mark as done
+mv todos/my_project/in_progress_fix-login.yaml todos/my_project/done_fix-login.yaml
+```
 
-| Key | Action |
-|-----|--------|
-| `e` | Edit card via `$EDITOR` (opens YAML temp file, k9s style) |
-| `x` | Delete card (confirmation prompt) |
-| `m` then `h` | Move card to previous (left) column |
-| `m` then `l` | Move card to next (right) column |
+### Update a task
 
-### Global shortcuts
+Edit the YAML file directly. Change any field.
 
-| Key | Action |
-|-----|--------|
-| `b` | Create new board |
-| `L` (shift) | Create new column in current board |
-| `c` | Create new card in current column |
-| `d` | Delete current board |
-| `r` | Refresh data |
-| `q` | Quit |
+### Delete a task
+
+```bash
+rm todos/my_project/done_fix-login.yaml
+```
+
+### List all tasks in a board
+
+```bash
+ls todos/my_project/
+```
+
+### List tasks by status
+
+```bash
+ls todos/my_project/todo_*          # What's pending
+ls todos/my_project/in_progress_*   # What's active
+ls todos/my_project/done_*          # What's completed
+```
+
+### List all boards
+
+```bash
+ls todos/
+```
+
+### Find urgent tasks across all boards
+
+```bash
+grep -rl "priority: urgent" todos/
+```
+
+### Find tasks by label
+
+```bash
+grep -rl "bug" todos/
+```
 
 ## Common Workflows
 
 ### Set up a new project board
 
 ```bash
-TASK="scripts/task.sh"
-$TASK board create --name "My Project"
-# Default columns (To Do, In Progress, Done) are auto-created
+mkdir -p todos/my_project
 ```
 
-### Create and track tasks
+That's it. No default columns needed — status is in the filename.
+
+### Track work on a feature
 
 ```bash
-$TASK card create --list-id <todo_list_id> --title "Implement feature X" --priority high
-$TASK card create --list-id <todo_list_id> --title "Write tests" --priority medium
-# Move to in-progress when starting work
-$TASK card move <card_id> --to-list-id <in_progress_list_id>
-# Move to done when complete
-$TASK card move <card_id> --to-list-id <done_list_id>
+# Create tasks
+cat > todos/my_project/todo_implement-api.yaml << 'EOF'
+title: Implement REST API
+priority: high
+labels: [backend]
+created: 2026-06-26
+EOF
+
+cat > todos/my_project/todo_write-tests.yaml << 'EOF'
+title: Write integration tests
+priority: medium
+labels: [testing]
+created: 2026-06-26
+EOF
+
+# Start working
+mv todos/my_project/todo_implement-api.yaml todos/my_project/in_progress_implement-api.yaml
+
+# Finish
+mv todos/my_project/in_progress_implement-api.yaml todos/my_project/done_implement-api.yaml
 ```
 
-### Check current status
+### Quick status check
 
 ```bash
-$TASK --json card list --list-id <todo_list_id>       # What's pending
-$TASK --json card list --list-id <in_progress_id>     # What's active
-$TASK --json card list --priority urgent               # What's urgent
+echo "=== TODO ===" && ls todos/my_project/todo_* 2>/dev/null
+echo "=== IN PROGRESS ===" && ls todos/my_project/in_progress_* 2>/dev/null
+echo "=== DONE ===" && ls todos/my_project/done_* 2>/dev/null
 ```
 
-## Output Format
-
-Default output is tab-separated for minimal token usage:
-```
-abc12345	medium	Fix the login bug
-def67890	high	Deploy to production
-```
-
-Use `--json` when you need structured data for processing.
-
-## API Direct Access
-
-If you prefer HTTP directly, all endpoints are available via the Unix socket:
+### Clean up completed tasks
 
 ```bash
-# Example: list boards
-curl --unix-socket ~/.local/share/task-manager/task_manager.sock \
-  http://localhost/api/v1/boards
+rm todos/my_project/done_*
 ```
+
+## Why This Design
+
+- **Zero dependencies** — no Python, no server, no database, no installation
+- **LLM-native** — agents already know how to read/write files and run shell commands
+- **Git-friendly** — tasks are plain text files, track them in version control
+- **Grep-friendly** — find anything with `grep`, `find`, `ls`
+- **Portable** — works on any machine with a filesystem
+- **Self-cleaning** — delete the `todos/` folder and everything is gone
