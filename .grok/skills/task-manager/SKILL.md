@@ -32,22 +32,20 @@ at a time, even if multiple models or skill invocations are active. Always
 check before starting:
 
 ```bash
-SOCK="$HOME/.local/share/task-manager/task_manager.sock"
 PID_FILE="$HOME/.local/share/task-manager/server.pid"
 
 if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
   : # Server already running — do nothing
 else
-  rm -f "$SOCK"
-  uvicorn api.main:app --uds "$SOCK" &
-  echo $! > "$PID_FILE"
+  task-server &
 fi
 ```
 
 To verify the server is reachable:
 
 ```bash
-curl --unix-socket "$SOCK" http://localhost/api/v1/health
+curl --unix-socket ~/.local/share/task-manager/task_manager.sock \
+  http://localhost/api/v1/health
 ```
 
 ## CLI Reference

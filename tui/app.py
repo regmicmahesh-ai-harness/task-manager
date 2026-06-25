@@ -326,7 +326,7 @@ class TaskManagerApp(App):
         board_view.remove_children()
         board_view.mount(
             Label(
-                "Cannot connect to API\n\nStart the server:\nuvicorn api.main:app --reload",
+                "Cannot connect to API\n\nStart the server:\ntask-server",
                 id="no-connection",
             )
         )

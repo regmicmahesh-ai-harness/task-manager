@@ -29,6 +29,7 @@ dev = [
 [project.scripts]
 task = "cli.main:cli"
 task-tui = "tui.app:main"
+task-server = "api.main:serve"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
