@@ -13,6 +13,7 @@ dependencies = [
     "alembic>=1.13.0",
     "click>=8.1.0",
     "httpx>=0.27.0",
+    "textual>=3.0.0",
 ]
 
 [project.optional-dependencies]
@@ -26,6 +27,7 @@ dev = [
 
 [project.scripts]
 task = "cli.main:cli"
+task-tui = "tui.app:main"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -54,7 +56,7 @@ fail_under = 100
 show_missing = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["api", "cli", "shared"]
+packages = ["api", "cli", "shared", "tui"]
 
 [build-system]
 requires = ["hatchling"]
