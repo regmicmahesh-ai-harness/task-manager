@@ -31,8 +31,8 @@ def _card_to_response(card: object) -> CardResponse:
         description=card.description,
         position=card.position,
         list_id=card.list_id,
-        priority=card.priority,  # type: ignore[arg-type]
-        status=card.status,  # type: ignore[arg-type]
+        priority=card.priority,
+        status=card.status,
         labels=labels,
         due_date=card.due_date,
         created_at=card.created_at,

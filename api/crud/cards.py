@@ -1,11 +1,18 @@
 """CRUD operations for cards."""
 
 from datetime import UTC, datetime
+from enum import Enum, auto
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.db_models import CardModel
+
+
+class _Unset(Enum):
+    """Sentinel for distinguishing 'not provided' from None."""
+
+    UNSET = auto()
 
 
 async def create_card(
@@ -70,7 +77,7 @@ async def update_card(
     priority: str | None = None,
     status: str | None = None,
     labels: str | None = None,
-    due_date: datetime | None = ...,  # type: ignore[assignment]  # sentinel
+    due_date: datetime | None | _Unset = _Unset.UNSET,
 ) -> CardModel:
     """Update a card."""
     if title is not None:
@@ -85,8 +92,8 @@ async def update_card(
         card.status = status
     if labels is not None:
         card.labels = labels
-    if due_date is not ...:
-        card.due_date = due_date  # type: ignore[assignment]  # allows None
+    if not isinstance(due_date, _Unset):
+        card.due_date = due_date
     card.updated_at = datetime.now(UTC)
     await db.commit()
     await db.refresh(card)
