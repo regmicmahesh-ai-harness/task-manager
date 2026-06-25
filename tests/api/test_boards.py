@@ -21,6 +21,17 @@ async def test_create_board_minimal(client: AsyncClient) -> None:
     assert resp.json()["description"] == ""
 
 
+async def test_create_board_creates_default_columns(client: AsyncClient) -> None:
+    """Creating a board auto-creates To Do, In Progress, Done columns."""
+    resp = await client.post("/api/v1/boards", json={"name": "Sprint 1"})
+    board_id = resp.json()["id"]
+    lists_resp = await client.get(f"/api/v1/boards/{board_id}/lists")
+    lists = lists_resp.json()
+    assert len(lists) == 3
+    names = [lst["name"] for lst in lists]
+    assert names == ["To Do", "In Progress", "Done"]
+
+
 async def test_create_board_validation_error(client: AsyncClient) -> None:
     """Name is required and cannot be empty."""
     resp = await client.post("/api/v1/boards", json={"name": ""})

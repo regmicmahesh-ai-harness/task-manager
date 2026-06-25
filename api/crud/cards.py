@@ -22,7 +22,6 @@ async def create_card(
     description: str = "",
     position: int = 0,
     priority: str = "medium",
-    status: str = "todo",
     labels: str = "",
     due_date: datetime | None = None,
 ) -> CardModel:
@@ -33,7 +32,6 @@ async def create_card(
         description=description,
         position=position,
         priority=priority,
-        status=status,
         labels=labels,
         due_date=due_date,
     )
@@ -51,7 +49,6 @@ async def get_card(db: AsyncSession, card_id: str) -> CardModel | None:
 async def get_cards(
     db: AsyncSession,
     list_id: str | None = None,
-    status: str | None = None,
     priority: str | None = None,
     limit: int = 50,
     offset: int = 0,
@@ -60,8 +57,6 @@ async def get_cards(
     stmt = select(CardModel).order_by(CardModel.position).limit(limit).offset(offset)
     if list_id is not None:
         stmt = stmt.where(CardModel.list_id == list_id)
-    if status is not None:
-        stmt = stmt.where(CardModel.status == status)
     if priority is not None:
         stmt = stmt.where(CardModel.priority == priority)
     result = await db.execute(stmt)
@@ -75,7 +70,6 @@ async def update_card(
     description: str | None = None,
     position: int | None = None,
     priority: str | None = None,
-    status: str | None = None,
     labels: str | None = None,
     due_date: datetime | None | _Unset = _Unset.UNSET,
 ) -> CardModel:
@@ -88,8 +82,6 @@ async def update_card(
         card.position = position
     if priority is not None:
         card.priority = priority
-    if status is not None:
-        card.status = status
     if labels is not None:
         card.labels = labels
     if not isinstance(due_date, _Unset):

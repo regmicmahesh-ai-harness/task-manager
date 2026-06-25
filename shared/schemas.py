@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from shared.enums import CardPriority, CardStatus
+from shared.enums import CardPriority
 
 # ── Board ──────────────────────────────────────────────────────────
 
@@ -75,7 +75,6 @@ class CardCreate(BaseModel):
     position: int = 0
     list_id: str
     priority: CardPriority = CardPriority.MEDIUM
-    status: CardStatus = CardStatus.TODO
     labels: list[str] = Field(default_factory=list)
     due_date: datetime | None = None
 
@@ -87,7 +86,6 @@ class CardUpdate(BaseModel):
     description: str | None = None
     position: int | None = None
     priority: CardPriority | None = None
-    status: CardStatus | None = None
     labels: list[str] | None = None
     due_date: datetime | None = None
 
@@ -115,7 +113,6 @@ class CardResponse(BaseModel):
     position: int
     list_id: str
     priority: CardPriority
-    status: CardStatus
     labels: list[str]
     due_date: datetime | None
     created_at: datetime

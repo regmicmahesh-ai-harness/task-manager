@@ -3,15 +3,6 @@
 from enum import StrEnum
 
 
-class CardStatus(StrEnum):
-    """Status of a card."""
-
-    TODO = "todo"
-    IN_PROGRESS = "in_progress"
-    DONE = "done"
-    ARCHIVED = "archived"
-
-
 class CardPriority(StrEnum):
     """Priority level of a card."""
 
@@ -19,3 +10,7 @@ class CardPriority(StrEnum):
     MEDIUM = "medium"
     HIGH = "high"
     URGENT = "urgent"
+
+
+# Default columns created for every new board.
+DEFAULT_COLUMNS = ["To Do", "In Progress", "Done"]

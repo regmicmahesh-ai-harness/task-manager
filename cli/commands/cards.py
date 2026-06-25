@@ -5,7 +5,7 @@ import click
 from cli.client import APIClient
 from cli.formatters import output
 
-CARD_COLS = ["id", "status", "priority", "title"]
+CARD_COLS = ["id", "priority", "title"]
 
 
 @click.group()
@@ -16,7 +16,6 @@ def card() -> None:
 
 @card.command("list")
 @click.option("--list-id", default=None)
-@click.option("--status", default=None)
 @click.option("--priority", default=None)
 @click.option("--limit", type=int, default=50)
 @click.option("--offset", type=int, default=0)
@@ -24,7 +23,6 @@ def card() -> None:
 def list_cards(
     ctx: click.Context,
     list_id: str | None,
-    status: str | None,
     priority: str | None,
     limit: int,
     offset: int,
@@ -34,8 +32,6 @@ def list_cards(
     params: dict[str, object] = {"limit": limit, "offset": offset}
     if list_id:
         params["list_id"] = list_id
-    if status:
-        params["status"] = status
     if priority:
         params["priority"] = priority
     data = client.get("/cards", params=params)
@@ -47,7 +43,6 @@ def list_cards(
 @click.option("--title", required=True)
 @click.option("--description", default="")
 @click.option("--priority", default="medium")
-@click.option("--status", default="todo")
 @click.option("--labels", default=None, help="Comma-separated labels")
 @click.pass_context
 def create_card(
@@ -56,7 +51,6 @@ def create_card(
     title: str,
     description: str,
     priority: str,
-    status: str,
     labels: str | None,
 ) -> None:
     """Create a card."""
@@ -66,7 +60,6 @@ def create_card(
         "list_id": list_id,
         "description": description,
         "priority": priority,
-        "status": status,
     }
     if labels:
         body["labels"] = [lb.strip() for lb in labels.split(",")]
@@ -89,7 +82,6 @@ def get_card(ctx: click.Context, card_id: str) -> None:
 @click.option("--title", default=None)
 @click.option("--description", default=None)
 @click.option("--priority", default=None)
-@click.option("--status", default=None)
 @click.option("--labels", default=None, help="Comma-separated labels")
 @click.pass_context
 def update_card(
@@ -98,7 +90,6 @@ def update_card(
     title: str | None,
     description: str | None,
     priority: str | None,
-    status: str | None,
     labels: str | None,
 ) -> None:
     """Update a card."""
@@ -110,8 +101,6 @@ def update_card(
         body["description"] = description
     if priority is not None:
         body["priority"] = priority
-    if status is not None:
-        body["status"] = status
     if labels is not None:
         body["labels"] = [lb.strip() for lb in labels.split(",")]
     data = client.patch(f"/cards/{card_id}", json=body)

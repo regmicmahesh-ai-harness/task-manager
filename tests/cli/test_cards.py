@@ -6,7 +6,7 @@ from click.testing import CliRunner
 
 from cli.main import cli
 
-SAMPLE_CARD = {"id": "crd12345", "status": "todo", "priority": "medium", "title": "Task 1"}
+SAMPLE_CARD = {"id": "crd12345", "priority": "medium", "title": "Task 1"}
 
 
 @patch("cli.commands.cards.APIClient")
@@ -24,7 +24,7 @@ def test_card_list_with_filters(mock_cls: MagicMock) -> None:
     """Card list with filters."""
     mock_cls.return_value.get.return_value = [SAMPLE_CARD]
     runner = CliRunner()
-    result = runner.invoke(cli, ["card", "list", "--list-id", "x", "--status", "todo", "--priority", "high"])
+    result = runner.invoke(cli, ["card", "list", "--list-id", "x", "--priority", "high"])
     assert result.exit_code == 0
 
 

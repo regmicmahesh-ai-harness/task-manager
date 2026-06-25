@@ -69,7 +69,6 @@ class CardModel(Base):
         String(8), ForeignKey("lists.id", ondelete="CASCADE"), nullable=False, index=True
     )
     priority: Mapped[str] = mapped_column(String(10), default="medium")
-    status: Mapped[str] = mapped_column(String(15), default="todo")
     labels: Mapped[str] = mapped_column(Text, default="")  # comma-separated
     due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)

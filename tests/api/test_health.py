@@ -4,7 +4,7 @@ import contextlib
 
 from httpx import AsyncClient
 
-from shared.enums import CardPriority, CardStatus
+from shared.enums import CardPriority, DEFAULT_COLUMNS
 from shared.models import Board, Card, Label, List
 
 
@@ -38,7 +38,6 @@ def test_shared_models_card() -> None:
     c = Card(title="Task", list_id="abc12345")
     assert c.title == "Task"
     assert c.priority == CardPriority.MEDIUM
-    assert c.status == CardStatus.TODO
     assert c.labels == []
     assert c.due_date is None
 
@@ -70,11 +69,8 @@ async def test_app_lifespan() -> None:
 
 def test_shared_enums() -> None:
     """Enum values are correct."""
-    assert CardStatus.TODO == "todo"
-    assert CardStatus.IN_PROGRESS == "in_progress"
-    assert CardStatus.DONE == "done"
-    assert CardStatus.ARCHIVED == "archived"
     assert CardPriority.LOW == "low"
     assert CardPriority.MEDIUM == "medium"
     assert CardPriority.HIGH == "high"
     assert CardPriority.URGENT == "urgent"
+    assert DEFAULT_COLUMNS == ["To Do", "In Progress", "Done"]

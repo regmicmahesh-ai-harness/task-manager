@@ -5,13 +5,17 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.db_models import BoardModel
+from api.db_models import BoardModel, ListModel
+from shared.enums import DEFAULT_COLUMNS
 
 
 async def create_board(db: AsyncSession, name: str, description: str = "") -> BoardModel:
-    """Create a new board."""
+    """Create a new board with default columns (To Do, In Progress, Done)."""
     board = BoardModel(name=name, description=description)
     db.add(board)
+    await db.flush()
+    for position, col_name in enumerate(DEFAULT_COLUMNS):
+        db.add(ListModel(name=col_name, board_id=board.id, position=position))
     await db.commit()
     await db.refresh(board)
     return board

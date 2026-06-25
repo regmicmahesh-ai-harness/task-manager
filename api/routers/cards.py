@@ -32,7 +32,6 @@ def _card_to_response(card: object) -> CardResponse:
         position=card.position,
         list_id=card.list_id,
         priority=card.priority,
-        status=card.status,
         labels=labels,
         due_date=card.due_date,
         created_at=card.created_at,
@@ -54,7 +53,6 @@ async def create_card_endpoint(body: CardCreate, db: AsyncSession = Depends(get_
         description=body.description,
         position=body.position,
         priority=body.priority.value,
-        status=body.status.value,
         labels=labels_str,
         due_date=body.due_date,
     )
@@ -64,14 +62,13 @@ async def create_card_endpoint(body: CardCreate, db: AsyncSession = Depends(get_
 @router.get("", response_model=list[CardResponse])
 async def list_cards_endpoint(
     list_id: str | None = None,
-    status: str | None = None,
     priority: str | None = None,
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     db: AsyncSession = Depends(get_db),
 ) -> list[CardResponse]:
     """List cards with optional filtering."""
-    cards = await get_cards(db, list_id=list_id, status=status, priority=priority, limit=limit, offset=offset)
+    cards = await get_cards(db, list_id=list_id, priority=priority, limit=limit, offset=offset)
     return [_card_to_response(c) for c in cards]
 
 
@@ -100,8 +97,6 @@ async def update_card_endpoint(card_id: str, body: CardUpdate, db: AsyncSession 
         kwargs["position"] = body.position
     if body.priority is not None:
         kwargs["priority"] = body.priority.value
-    if body.status is not None:
-        kwargs["status"] = body.status.value
     if labels_str is not None:
         kwargs["labels"] = labels_str
     kwargs["due_date"] = body.due_date

@@ -26,7 +26,6 @@ async def test_create_card(client: AsyncClient) -> None:
     assert data["title"] == "Task 1"
     assert data["list_id"] == list_id
     assert data["priority"] == "high"
-    assert data["status"] == "todo"
 
 
 async def test_create_card_with_labels(client: AsyncClient) -> None:
@@ -83,19 +82,6 @@ async def test_list_cards_filter_by_list(client: AsyncClient) -> None:
     assert resp.json()[0]["title"] == "In L1"
 
 
-async def test_list_cards_filter_by_status(client: AsyncClient) -> None:
-    """Filter cards by status."""
-    _, list_id = await _setup(client)
-    await client.post("/api/v1/cards", json={"title": "Todo", "list_id": list_id})
-    await client.post(
-        "/api/v1/cards",
-        json={"title": "Done", "list_id": list_id, "status": "done"},
-    )
-    resp = await client.get("/api/v1/cards", params={"status": "done"})
-    assert len(resp.json()) == 1
-    assert resp.json()[0]["title"] == "Done"
-
-
 async def test_list_cards_filter_by_priority(client: AsyncClient) -> None:
     """Filter cards by priority."""
     _, list_id = await _setup(client)
@@ -144,12 +130,11 @@ async def test_update_card(client: AsyncClient) -> None:
     card_id = create.json()["id"]
     resp = await client.patch(
         f"/api/v1/cards/{card_id}",
-        json={"title": "New", "status": "done", "priority": "urgent"},
+        json={"title": "New", "priority": "urgent"},
     )
     assert resp.status_code == 200
     data = resp.json()
     assert data["title"] == "New"
-    assert data["status"] == "done"
     assert data["priority"] == "urgent"
 
 

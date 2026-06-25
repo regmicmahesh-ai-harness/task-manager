@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
 
-from shared.enums import CardPriority, CardStatus
+from shared.enums import CardPriority
 
 
 def _short_uuid() -> str:
@@ -50,7 +50,6 @@ class Card(TimestampMixin):
     position: int = 0
     list_id: str
     priority: CardPriority = CardPriority.MEDIUM
-    status: CardStatus = CardStatus.TODO
     labels: list[str] = Field(default_factory=list)
     due_date: datetime | None = None
 

@@ -43,19 +43,15 @@ async def test_create_list_validation_error(client: AsyncClient) -> None:
 
 
 async def test_list_lists(client: AsyncClient) -> None:
-    """List all lists in a board."""
+    """List all lists in a board (includes 3 default columns)."""
     board_id = await _create_board(client)
     await client.post(
         f"/api/v1/boards/{board_id}/lists",
-        json={"name": "To Do", "board_id": board_id, "position": 0},
-    )
-    await client.post(
-        f"/api/v1/boards/{board_id}/lists",
-        json={"name": "Done", "board_id": board_id, "position": 1},
+        json={"name": "QA Review", "board_id": board_id, "position": 10},
     )
     resp = await client.get(f"/api/v1/boards/{board_id}/lists")
     assert resp.status_code == 200
-    assert len(resp.json()) == 2
+    assert len(resp.json()) == 4  # 3 defaults + 1 custom
 
 
 async def test_list_lists_board_not_found(client: AsyncClient) -> None:
@@ -65,12 +61,12 @@ async def test_list_lists_board_not_found(client: AsyncClient) -> None:
 
 
 async def test_list_lists_pagination(client: AsyncClient) -> None:
-    """Pagination on lists."""
+    """Pagination on lists (3 default + 5 custom = 8 total)."""
     board_id = await _create_board(client)
     for i in range(5):
         await client.post(
             f"/api/v1/boards/{board_id}/lists",
-            json={"name": f"List {i}", "board_id": board_id, "position": i},
+            json={"name": f"List {i}", "board_id": board_id, "position": 10 + i},
         )
     resp = await client.get(f"/api/v1/boards/{board_id}/lists", params={"limit": 2})
     assert len(resp.json()) == 2

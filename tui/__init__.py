@@ -1,1 +1,1 @@
-"""Task Manager TUI."""
+"""Task Manager TUI — modular Textual application."""
