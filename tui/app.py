@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+import shlex
 import subprocess
 import tempfile
 from enum import StrEnum
@@ -369,7 +370,6 @@ class TaskManagerApp(App):
         """Edit card via $EDITOR on a YAML temp file (k9s style)."""
         self._edit_card_in_editor(event.card_data)
 
-    @work(thread=True)
     def _edit_card_in_editor(self, card: dict[str, Any]) -> None:
         """Suspend TUI, open $EDITOR, parse result, PATCH the API."""
         editable = {
@@ -384,7 +384,9 @@ class TaskManagerApp(App):
 
         try:
             with self.suspend():
-                subprocess.run([editor, tmp_path], check=True)
+                subprocess.run(  # noqa: S603
+                    [*shlex.split(editor), tmp_path], check=False
+                )
 
             with open(tmp_path) as f:
                 updated = yaml.safe_load(f)
@@ -407,7 +409,7 @@ class TaskManagerApp(App):
                 self.notify("No changes")
                 return
 
-            self.call_from_thread(self._patch_card, card["id"], body)
+            self._patch_card(card["id"], body)
         finally:
             os.unlink(tmp_path)
 
