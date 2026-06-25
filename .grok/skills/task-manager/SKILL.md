@@ -21,17 +21,24 @@ Three interfaces available:
 
 ## Setup
 
-Install the package (one-time). This creates an isolated environment
-automatically and puts `task`, `task-tui`, and `task-server` on your PATH:
+Everything runs from the project directory — no global installation. The
+virtual environment lives inside the repo, so removing the skill directory
+cleans up everything.
 
 ```bash
-uv tool install "task-manager @ git+https://github.com/regmicmahesh-ai-harness/task-manager.git"
+# One-time: install dependencies (creates .venv/ in project dir)
+SKILL_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"  # repo root
+cd "$SKILL_DIR" && uv sync
 ```
 
-To upgrade to the latest version later:
+When invoking from any working directory, use `--project` to point at the
+repo root. All examples below use a `TASK` alias for brevity:
 
 ```bash
-uv tool upgrade task-manager
+TASK_PROJECT="<path-to-this-repo>"
+alias task="uv run --project $TASK_PROJECT task"
+alias task-server="uv run --project $TASK_PROJECT task-server"
+alias task-tui="uv run --project $TASK_PROJECT task-tui"
 ```
 
 ### Starting the server (singleton, Unix socket)
@@ -49,7 +56,7 @@ PID_FILE="$HOME/.local/share/task-manager/server.pid"
 if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
   : # Server already running — do nothing
 else
-  task-server &
+  uv run --project "$TASK_PROJECT" task-server &
 fi
 ```
 
@@ -62,16 +69,19 @@ curl --unix-socket ~/.local/share/task-manager/task_manager.sock \
 
 ## Entry Points
 
+All commands are run via `uv run --project <repo-root>`:
+
 | Command | Purpose |
 |---------|---------|
-| `task-server` | Start API server on Unix socket (run once, singleton) |
-| `task` | CLI for AI agents (terse tab-separated output) |
-| `task-tui` | Interactive terminal UI with vim-style navigation |
+| `uv run --project <repo> task-server` | Start API server on Unix socket (singleton) |
+| `uv run --project <repo> task` | CLI for AI agents (terse tab-separated output) |
+| `uv run --project <repo> task-tui` | Interactive terminal UI with vim navigation |
 
 ## CLI Reference
 
-All commands use the `task` entry point. Output is terse tab-separated by
-default. Add `--json` before the subcommand for JSON output.
+Output is terse tab-separated by default. Add `--json` before the subcommand
+for JSON output. Examples below assume the `task` alias from Setup, or
+substitute `uv run --project <repo> task`.
 
 ### Boards
 
@@ -114,8 +124,9 @@ task card delete <card_id>                                         # Delete card
 
 ## TUI Reference
 
-Launch with `task-tui`. Keyboard-only, vim-style navigation. Arrow keys
-also work everywhere alongside hjkl.
+Launch with `task-tui` (or `uv run --project <repo> task-tui`).
+Keyboard-only, vim-style navigation. Arrow keys also work everywhere
+alongside hjkl.
 
 ### Three-tier navigation
 
