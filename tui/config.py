@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import os
-
-API_BASE = os.environ.get("TASK_MANAGER_API_URL", "http://localhost:8000")
-API_PREFIX = "/api/v1"
+from shared.socket import API_PREFIX, SOCKET_PATH
 
 PRIORITY_COLORS = {
     "urgent": "red",
@@ -14,5 +11,4 @@ PRIORITY_COLORS = {
     "low": "gray",
 }
 
-
-REFRESH_INTERVAL = 2.0
+__all__ = ["API_PREFIX", "PRIORITY_COLORS", "SOCKET_PATH"]

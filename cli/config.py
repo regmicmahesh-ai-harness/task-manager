@@ -1,6 +1,5 @@
 """CLI configuration."""
 
-import os
+from shared.socket import API_PREFIX, SOCKET_PATH
 
-API_BASE_URL = os.environ.get("TASK_MANAGER_API_URL", "http://localhost:8000")
-API_PREFIX = "/api/v1"
+__all__ = ["API_PREFIX", "SOCKET_PATH"]
