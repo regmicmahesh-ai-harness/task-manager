@@ -16,13 +16,18 @@ token output.
 
 ## Setup
 
-Before using, ensure the API server is running. If it's not running, start it:
+Install the package from GitHub (one-time):
 
 ```bash
-cd /Users/tungtungtungsahur/ai-harness/task-manager
-# Check if server is running
+uv pip install "task-manager @ git+https://github.com/regmicmahesh-ai-harness/task-manager.git"
+```
+
+Then ensure the API server is running:
+
+```bash
+# Check if server is running, start if not
 curl -s http://localhost:8000/api/v1/health > /dev/null 2>&1 || \
-  (uv run uvicorn api.main:app --host 0.0.0.0 --port 8000 &)
+  (uvicorn api.main:app --host 0.0.0.0 --port 8000 &)
 ```
 
 ## CLI Reference
