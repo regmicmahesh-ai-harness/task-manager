@@ -21,10 +21,17 @@ Three interfaces available:
 
 ## Setup
 
-Install the package from GitHub (one-time):
+Install the package (one-time). This creates an isolated environment
+automatically and puts `task`, `task-tui`, and `task-server` on your PATH:
 
 ```bash
-uv pip install "task-manager @ git+https://github.com/regmicmahesh-ai-harness/task-manager.git"
+uv tool install "task-manager @ git+https://github.com/regmicmahesh-ai-harness/task-manager.git"
+```
+
+To upgrade to the latest version later:
+
+```bash
+uv tool upgrade task-manager
 ```
 
 ### Starting the server (singleton, Unix socket)
