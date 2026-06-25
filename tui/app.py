@@ -107,46 +107,46 @@ class TaskManagerApp(App):
             self._handle_card_key(event, key)
 
     def _handle_board_key(self, event: Key, key: str) -> None:
-        """Board level: h/l=switch boards, j/Enter=dive into columns."""
-        if key == "h":
+        """Board level: h/l/arrows=switch boards, j/Enter/down=dive."""
+        if key in ("h", "left"):
             event.stop()
             event.prevent_default()
             self._switch_board(-1)
-        elif key == "l":
+        elif key in ("l", "right"):
             event.stop()
             event.prevent_default()
             self._switch_board(1)
-        elif key in ("j", "enter"):
+        elif key in ("j", "enter", "down"):
             event.stop()
             event.prevent_default()
             self._enter_column_level()
 
     def _handle_column_key(self, event: Key, key: str) -> None:
-        """Column level: h/l=switch columns, j/Enter=dive, Esc/k=back."""
-        if key == "h":
+        """Column level: h/l/arrows=switch, j/Enter/down=dive, Esc/k/up=back."""
+        if key in ("h", "left"):
             event.stop()
             event.prevent_default()
             self._nav_column(-1)
-        elif key == "l":
+        elif key in ("l", "right"):
             event.stop()
             event.prevent_default()
             self._nav_column(1)
-        elif key in ("j", "enter"):
+        elif key in ("j", "enter", "down"):
             event.stop()
             event.prevent_default()
             self._enter_card_level()
-        elif key in ("escape", "k"):
+        elif key in ("escape", "k", "up"):
             event.stop()
             event.prevent_default()
             self._back_to_board_level()
 
     def _handle_card_key(self, event: Key, key: str) -> None:
-        """Card level: j/k=move, Esc=back to columns."""
-        if key == "j":
+        """Card level: j/k/arrows=move, Esc=back to columns."""
+        if key in ("j", "down"):
             event.stop()
             event.prevent_default()
             self._nav_card(1)
-        elif key == "k":
+        elif key in ("k", "up"):
             event.stop()
             event.prevent_default()
             self._nav_card(-1)
