@@ -10,17 +10,16 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
-from textual.reactive import reactive
 from textual.widgets import Footer, Header, Label, Static
 
 API_BASE = os.environ.get("TASK_MANAGER_API_URL", "http://localhost:8000")
 API_PREFIX = "/api/v1"
 
 PRIORITY_COLORS = {
-    "urgent": "white on red",
-    "high": "white on dark_orange3",
-    "medium": "white on dodger_blue2",
-    "low": "white on grey50",
+    "urgent": "red",
+    "high": "dark_orange3",
+    "medium": "dodger_blue2",
+    "low": "grey50",
 }
 
 STATUS_ICONS = {
@@ -33,12 +32,13 @@ STATUS_ICONS = {
 REFRESH_INTERVAL = 2.0
 
 
-def api_get(path: str, params: dict[str, Any] | None = None) -> Any:
-    """GET request to the API."""
+async def api_get(path: str, params: dict[str, Any] | None = None) -> Any:
+    """Async GET request to the API."""
     try:
-        resp = httpx.get(f"{API_BASE}{API_PREFIX}{path}", params=params, timeout=5.0)
-        resp.raise_for_status()
-        return resp.json()
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(f"{API_BASE}{API_PREFIX}{path}", params=params)
+            resp.raise_for_status()
+            return resp.json()
     except httpx.HTTPError:
         return None
 
@@ -47,11 +47,6 @@ class CardWidget(Static):
     """A single card displayed in a list column."""
 
     def __init__(self, card: dict[str, Any]) -> None:
-        super().__init__()
-        self.card_data = card
-
-    def compose(self) -> ComposeResult:
-        card = self.card_data
         priority = card.get("priority", "medium")
         status = card.get("status", "todo")
         icon = STATUS_ICONS.get(status, "○")
@@ -59,15 +54,16 @@ class CardWidget(Static):
         card_id = card.get("id", "")
         desc = card.get("description", "")
 
-        yield Label(f"{icon} {title}", classes="card-title")
+        parts = [f"{icon} [bold]{title}[/bold]"]
         if desc:
-            yield Label(desc[:60], classes="card-desc")
-        yield Label(f"[{priority}] {card_id}", classes="card-meta")
+            parts.append(f"  {desc[:60]}")
+        parts.append(f"  \\[{priority}] {card_id}")
+        super().__init__("\n".join(parts), markup=True)
+        self._priority = priority
 
     def on_mount(self) -> None:
-        priority = self.card_data.get("priority", "medium")
-        color = PRIORITY_COLORS.get(priority, "white on grey50")
-        self.styles.background = color.split(" on ")[-1] if " on " in color else "grey23"
+        bg = PRIORITY_COLORS.get(self._priority, "grey50")
+        self.styles.background = bg
 
 
 class ListColumn(Vertical):
@@ -165,25 +161,6 @@ class TaskManagerApp(App):
         border: round $primary-background-lighten-1;
     }
 
-    .card-title {
-        width: 1fr;
-        text-style: bold;
-        color: $text;
-    }
-
-    .card-desc {
-        width: 1fr;
-        color: $text-muted;
-        margin-top: 1;
-    }
-
-    .card-meta {
-        width: 1fr;
-        color: $text-disabled;
-        text-align: right;
-        margin-top: 1;
-    }
-
     .empty-list {
         width: 1fr;
         color: $text-disabled;
@@ -200,8 +177,10 @@ class TaskManagerApp(App):
         Binding("p", "prev_board", "Prev Board"),
     ]
 
-    boards: reactive[list[dict[str, Any]]] = reactive(list, always_update=True)
-    board_index: reactive[int] = reactive(0)
+    def __init__(self) -> None:
+        super().__init__()
+        self._boards: list[dict[str, Any]] = []
+        self._board_index: int = 0
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -211,70 +190,71 @@ class TaskManagerApp(App):
 
     def on_mount(self) -> None:
         """Start loading and auto-refresh."""
-        self.load_boards()
-        self.set_interval(REFRESH_INTERVAL, self.auto_refresh)
+        self.load_data()
+        self.set_interval(REFRESH_INTERVAL, self.load_data)
 
-    @work(thread=True)
-    def load_boards(self) -> None:
-        """Fetch boards from the API."""
-        data = api_get("/boards")
-        if data is not None:
-            self.boards = data
-        else:
-            self.call_from_thread(self.show_no_connection)
+    @work(exclusive=True)
+    async def load_data(self) -> None:
+        """Fetch boards, lists, and cards from the API."""
+        data = await api_get("/boards")
+        if data is None:
+            self.show_no_connection()
+            return
+
+        self._boards = data
+        if not self._boards:
+            self.update_board_selector()
+            board_view = self.query_one("#board-view", BoardView)
+            await board_view.remove_children()
+            await board_view.mount(
+                Label(
+                    "No boards. Create one with: task board create --name 'My Board'",
+                    classes="empty-list",
+                )
+            )
+            return
+
+        if self._board_index >= len(self._boards):
+            self._board_index = 0
+
+        self.update_board_selector()
+
+        board = self._boards[self._board_index]
+        board_id = board["id"]
+
+        lists_data = await api_get(f"/boards/{board_id}/lists")
+        if lists_data is None:
+            return
+
+        columns: list[tuple[dict[str, Any], list[dict[str, Any]]]] = []
+        for lst in lists_data:
+            cards = await api_get("/cards", params={"list_id": lst["id"]})
+            columns.append((lst, cards or []))
+
+        self.render_board(columns)
 
     def show_no_connection(self) -> None:
         """Show connection error."""
         board_view = self.query_one("#board-view", BoardView)
         board_view.remove_children()
         board_view.mount(
-            Label("Cannot connect to API\n\nStart the server:\nuvicorn api.main:app --reload", id="no-connection")
+            Label(
+                "Cannot connect to API\n\nStart the server:\nuvicorn api.main:app --reload",
+                id="no-connection",
+            )
         )
-
-    def watch_boards(self, boards: list[dict[str, Any]]) -> None:
-        """When boards change, update the selector and load the current board."""
-        if not boards:
-            return
-        if self.board_index >= len(boards):
-            self.board_index = 0
-        self.update_board_selector()
-        self.load_board_content()
-
-    def watch_board_index(self, _index: int) -> None:
-        """When board index changes, update view."""
-        if self.boards:
-            self.update_board_selector()
-            self.load_board_content()
 
     def update_board_selector(self) -> None:
         """Update the board selector label."""
-        if not self.boards:
-            return
-        board = self.boards[self.board_index]
-        total = len(self.boards)
-        idx = self.board_index + 1
         selector = self.query_one("#board-selector", Horizontal)
         selector.remove_children()
+        if not self._boards:
+            selector.mount(Label("No boards"))
+            return
+        board = self._boards[self._board_index]
+        total = len(self._boards)
+        idx = self._board_index + 1
         selector.mount(Label(f"◀ Board {idx}/{total}: {board['name']} ▶"))
-
-    @work(thread=True)
-    def load_board_content(self) -> None:
-        """Fetch lists and cards for the current board."""
-        if not self.boards:
-            return
-        board = self.boards[self.board_index]
-        board_id = board["id"]
-
-        lists_data = api_get(f"/boards/{board_id}/lists")
-        if lists_data is None:
-            return
-
-        columns: list[tuple[dict[str, Any], list[dict[str, Any]]]] = []
-        for lst in lists_data:
-            cards = api_get("/cards", params={"list_id": lst["id"]})
-            columns.append((lst, cards or []))
-
-        self.call_from_thread(self.render_board, columns)
 
     def render_board(self, columns: list[tuple[dict[str, Any], list[dict[str, Any]]]]) -> None:
         """Render the board columns."""
@@ -282,29 +262,32 @@ class TaskManagerApp(App):
         board_view.remove_children()
 
         if not columns:
-            board_view.mount(Label("No lists in this board. Create one with: task list create", classes="empty-list"))
+            board_view.mount(
+                Label(
+                    "No lists in this board. Create one with: task list create",
+                    classes="empty-list",
+                )
+            )
             return
 
         for lst, cards in columns:
             board_view.mount(ListColumn(lst, cards))
 
-    def auto_refresh(self) -> None:
-        """Periodic refresh."""
-        self.load_boards()
-
     def action_refresh(self) -> None:
         """Manual refresh."""
-        self.load_boards()
+        self.load_data()
 
     def action_next_board(self) -> None:
         """Switch to the next board."""
-        if self.boards:
-            self.board_index = (self.board_index + 1) % len(self.boards)
+        if self._boards:
+            self._board_index = (self._board_index + 1) % len(self._boards)
+            self.load_data()
 
     def action_prev_board(self) -> None:
         """Switch to the previous board."""
-        if self.boards:
-            self.board_index = (self.board_index - 1) % len(self.boards)
+        if self._boards:
+            self._board_index = (self._board_index - 1) % len(self._boards)
+            self.load_data()
 
 
 def main() -> None:
