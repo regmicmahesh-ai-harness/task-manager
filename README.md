@@ -1,11 +1,8 @@
 # Task Manager
 
-A file-based task manager designed for AI agents. No server, no dependencies,
-no installation — just folders and YAML files.
-
-- **Boards** = folders under `./todos/`
-- **Tasks** = YAML files (`todo_fix-bug.yaml`, `in_progress_refactor.yaml`, `done_deploy.yaml`)
-- **Status** = the filename prefix — rename to move between statuses
+Single-file task manager for AI agents. All boards and tasks live in one
+YAML file (`.task-manager.todos.yaml`) at the project root. No server, no
+dependencies, no installation.
 
 ## Usage
 

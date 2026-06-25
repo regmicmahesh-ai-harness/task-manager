@@ -1,9 +1,9 @@
 ---
 name: task-manager
 description: >
-  File-based task manager. Boards are folders, tasks are YAML files.
-  Status is the filename prefix: todo_, in_progress_, done_.
-  No server, no dependencies — just files.
+  Single-file task manager. All boards and tasks live in
+  .task-manager.todos.yaml at the project root.
+  No server, no dependencies — just one YAML file.
   Use when: the user wants to create tasks, manage a todo list, organize work
   into boards, move tasks between statuses, or runs /task-manager.
   Trigger keywords: "task", "todo", "board", "card", "create task",
@@ -12,225 +12,166 @@ description: >
 
 # Task Manager Skill
 
-A file-based task manager. No server, no CLI, no dependencies. Just folders
-and YAML files that any LLM can read and write directly.
+Single-file task manager. No server, no CLI, no dependencies.
+All boards and tasks live in one file: `.task-manager.todos.yaml`
 
-- **Boards** = folders under `./todos/`
-- **Tasks** = YAML files inside a board folder
-- **Status** = the filename prefix (`todo_`, `in_progress_`, `done_`)
+One read to see everything. One write to change anything.
 
-Moving a task between statuses = renaming the file.
-
-## Setup
-
-None. Create a `todos/` directory in your project root when you need it:
-
-```bash
-mkdir -p todos
-```
-
-## Directory Structure
+## File Location
 
 ```
-<project-root>/
-└── todos/
-    ├── my_project/
-    │   ├── todo_implement-auth.yaml
-    │   ├── todo_write-tests.yaml
-    │   ├── in_progress_fix-login-bug.yaml
-    │   └── done_setup-ci.yaml
-    └── backend_refactor/
-        ├── todo_migrate-to-postgres.yaml
-        └── in_progress_update-orm-models.yaml
+<project-root>/.task-manager.todos.yaml
 ```
 
-## Naming Convention
+Create it when you need it. Delete it to remove all tasks.
 
-### Board folders
-
-- Location: `todos/<board_name>/`
-- Use `snake_case` for folder names
-- Create the folder to create a board, delete it to delete a board
-
-### Task files
-
-Filename format: `<status>_<slug>.yaml`
-
-| Prefix | Meaning |
-|--------|---------|
-| `todo_` | Not started |
-| `in_progress_` | Currently being worked on |
-| `done_` | Completed |
-
-- `<slug>` is a short, descriptive `kebab-case` identifier
-- Example: `todo_fix-payment-flow.yaml`, `in_progress_add-retry-logic.yaml`
-
-## Task File Format
-
-Each task is a YAML file with these fields:
+## File Format
 
 ```yaml
-title: Fix the payment flow
-description: |
-  Users are getting a 500 error when submitting payment with
-  international cards. Need to handle currency conversion.
-priority: high
-labels:
-  - bug
-  - payments
-created: 2026-06-26
-due: 2026-07-01
+my_project:
+  todo:
+    - title: Implement auth
+      priority: high
+      labels: [backend, security]
+    - title: Write tests
+  in_progress:
+    - title: Fix login bug
+      description: Users can't log in with special characters
+      priority: urgent
+      labels: [bug]
+  done:
+    - title: Setup CI
+
+backend_refactor:
+  todo:
+    - title: Migrate to Postgres
+      priority: high
+    - title: Update ORM models
+  in_progress: []
+  done:
+    - title: Design new schema
 ```
 
-### Fields
+## Structure
+
+```yaml
+<board_name>:
+  todo:
+    - <task>
+    - <task>
+  in_progress:
+    - <task>
+  done:
+    - <task>
+```
+
+- **Top-level keys** = board names (snake_case)
+- **Second-level keys** = status columns: `todo`, `in_progress`, `done`
+- **Lists under each status** = tasks
+
+## Task Fields
+
+A task can be a simple string (title only) or an object:
+
+```yaml
+# Minimal — just a title
+- title: Fix the bug
+
+# Full — all fields
+- title: Fix the payment flow
+  description: |
+    Users get a 500 error when submitting payment
+    with international cards.
+  priority: high
+  labels: [bug, payments]
+  created: 2026-06-26
+  due: 2026-07-01
+```
 
 | Field | Required | Type | Notes |
 |-------|----------|------|-------|
 | `title` | yes | string | Short, descriptive title |
-| `description` | no | string | Detailed description (use `\|` for multiline) |
-| `priority` | no | string | `low`, `medium` (default), `high`, `urgent` |
+| `description` | no | string | Details (use `\|` for multiline) |
+| `priority` | no | string | `low`, `medium`, `high`, `urgent` |
 | `labels` | no | list | Freeform tags |
-| `created` | yes | date | `YYYY-MM-DD` — set when creating |
-| `due` | no | date | `YYYY-MM-DD` — optional deadline |
+| `created` | no | date | `YYYY-MM-DD` |
+| `due` | no | date | `YYYY-MM-DD` deadline |
 
 ## Operations
 
+All operations are just edits to `.task-manager.todos.yaml`.
+
 ### Create a board
 
-```bash
-mkdir -p todos/my_project
-```
+Add a new top-level key:
 
-### Delete a board
-
-```bash
-rm -rf todos/my_project
+```yaml
+new_board:
+  todo: []
+  in_progress: []
+  done: []
 ```
 
 ### Create a task
 
-Write a YAML file with the `todo_` prefix:
+Append to the `todo` list of a board:
 
-```bash
-cat > todos/my_project/todo_fix-login.yaml << 'EOF'
-title: Fix login bug
-description: Users can't log in with special characters in password
-priority: high
-labels:
-  - bug
-  - auth
-created: 2026-06-26
-EOF
+```yaml
+my_project:
+  todo:
+    - title: Existing task
+    - title: New task        # ← add here
+      priority: high
 ```
 
-### Move a task (change status)
+### Move a task
 
-Rename the file prefix:
+Cut from one status list, paste into another:
 
-```bash
-# Start working on it
-mv todos/my_project/todo_fix-login.yaml todos/my_project/in_progress_fix-login.yaml
+```yaml
+# Before — task is in todo
+my_project:
+  todo:
+    - title: Fix login bug
+  in_progress: []
 
-# Mark as done
-mv todos/my_project/in_progress_fix-login.yaml todos/my_project/done_fix-login.yaml
+# After — moved to in_progress
+my_project:
+  todo: []
+  in_progress:
+    - title: Fix login bug
 ```
 
 ### Update a task
 
-Edit the YAML file directly. Change any field.
+Edit fields in place.
 
 ### Delete a task
 
-```bash
-rm todos/my_project/done_fix-login.yaml
-```
+Remove it from the list.
 
-### List all tasks in a board
+### Delete a board
 
-```bash
-ls todos/my_project/
-```
+Remove the entire top-level key.
 
-### List tasks by status
+### Clean up done tasks
 
-```bash
-ls todos/my_project/todo_*          # What's pending
-ls todos/my_project/in_progress_*   # What's active
-ls todos/my_project/done_*          # What's completed
-```
+Clear the `done` list: `done: []`
 
-### List all boards
+## Example Session
+
+Read the file to see current state:
 
 ```bash
-ls todos/
+cat .task-manager.todos.yaml
 ```
 
-### Find urgent tasks across all boards
-
-```bash
-grep -rl "priority: urgent" todos/
-```
-
-### Find tasks by label
-
-```bash
-grep -rl "bug" todos/
-```
-
-## Common Workflows
-
-### Set up a new project board
-
-```bash
-mkdir -p todos/my_project
-```
-
-That's it. No default columns needed — status is in the filename.
-
-### Track work on a feature
-
-```bash
-# Create tasks
-cat > todos/my_project/todo_implement-api.yaml << 'EOF'
-title: Implement REST API
-priority: high
-labels: [backend]
-created: 2026-06-26
-EOF
-
-cat > todos/my_project/todo_write-tests.yaml << 'EOF'
-title: Write integration tests
-priority: medium
-labels: [testing]
-created: 2026-06-26
-EOF
-
-# Start working
-mv todos/my_project/todo_implement-api.yaml todos/my_project/in_progress_implement-api.yaml
-
-# Finish
-mv todos/my_project/in_progress_implement-api.yaml todos/my_project/done_implement-api.yaml
-```
-
-### Quick status check
-
-```bash
-echo "=== TODO ===" && ls todos/my_project/todo_* 2>/dev/null
-echo "=== IN PROGRESS ===" && ls todos/my_project/in_progress_* 2>/dev/null
-echo "=== DONE ===" && ls todos/my_project/done_* 2>/dev/null
-```
-
-### Clean up completed tasks
-
-```bash
-rm todos/my_project/done_*
-```
+Then edit it to make changes. That's it.
 
 ## Why This Design
 
+- **One file, one read** — the agent sees all boards and tasks in a single tool call
 - **Zero dependencies** — no Python, no server, no database, no installation
-- **LLM-native** — agents already know how to read/write files and run shell commands
-- **Git-friendly** — tasks are plain text files, track them in version control
-- **Grep-friendly** — find anything with `grep`, `find`, `ls`
-- **Portable** — works on any machine with a filesystem
-- **Self-cleaning** — delete the `todos/` folder and everything is gone
+- **Minimal tokens** — compact YAML, no repeated boilerplate per file
+- **Git-friendly** — one file to track in version control
+- **Self-cleaning** — delete the file and everything is gone
