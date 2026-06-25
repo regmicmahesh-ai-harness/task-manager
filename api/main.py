@@ -12,7 +12,7 @@ from api.routers import boards, cards, health, lists
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Create tables on startup."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

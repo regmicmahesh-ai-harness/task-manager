@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.database import async_session
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db() -> AsyncGenerator[AsyncSession]:
     """Yield an async database session."""
     async with async_session() as session:
         yield session
