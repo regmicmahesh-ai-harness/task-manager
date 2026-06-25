@@ -10,11 +10,13 @@ Vim-style keybindings (active when a card is focused):
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from textual.events import Key
 from textual.message import Message
 from textual.widgets import Static
+
+if TYPE_CHECKING:
+    from textual.events import Key
 
 from tui.config import PRIORITY_COLORS
 

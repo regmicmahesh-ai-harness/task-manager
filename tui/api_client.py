@@ -13,9 +13,7 @@ async def api_get(path: str, params: dict[str, Any] | None = None) -> Any:
     """Async GET request to the API."""
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(
-                f"{API_BASE}{API_PREFIX}{path}", params=params
-            )
+            resp = await client.get(f"{API_BASE}{API_PREFIX}{path}", params=params)
             resp.raise_for_status()
             return resp.json()
     except httpx.HTTPError:
@@ -26,9 +24,7 @@ async def api_post(path: str, json: dict[str, Any] | None = None) -> Any:
     """Async POST request to the API."""
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.post(
-                f"{API_BASE}{API_PREFIX}{path}", json=json
-            )
+            resp = await client.post(f"{API_BASE}{API_PREFIX}{path}", json=json)
             resp.raise_for_status()
             return resp.json()
     except httpx.HTTPError:
@@ -39,9 +35,7 @@ async def api_patch(path: str, json: dict[str, Any] | None = None) -> Any:
     """Async PATCH request to the API."""
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.patch(
-                f"{API_BASE}{API_PREFIX}{path}", json=json
-            )
+            resp = await client.patch(f"{API_BASE}{API_PREFIX}{path}", json=json)
             resp.raise_for_status()
             return resp.json()
     except httpx.HTTPError:

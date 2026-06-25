@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from textual import work
-from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label
+
+if TYPE_CHECKING:
+    from textual.app import ComposeResult
 
 from tui.api_client import api_post
 

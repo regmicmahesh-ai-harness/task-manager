@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from textual.app import ComposeResult
 from textual.containers import Vertical, VerticalScroll
 from textual.widgets import Label, Static
+
+if TYPE_CHECKING:
+    from textual.app import ComposeResult
 
 from tui.widgets.card_widget import CardWidget
 

@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from textual import work
-from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, Select
+
+if TYPE_CHECKING:
+    from textual.app import ComposeResult
 
 from tui.api_client import api_post
 
@@ -33,21 +35,15 @@ class CreateCardModal(ModalScreen[bool]):
     def compose(self) -> ComposeResult:
         """Build the create-card form."""
         with Vertical(id="modal-dialog"):
-            yield Label(
-                f"Create Card in '{self._list_name}'", id="modal-title"
-            )
+            yield Label(f"Create Card in '{self._list_name}'", id="modal-title")
             yield Label("Title")
             yield Input(placeholder="Card title", id="card-title")
             yield Label("Description")
-            yield Input(
-                placeholder="Description (optional)", id="card-desc"
-            )
+            yield Input(placeholder="Description (optional)", id="card-desc")
             yield Label("Priority")
             yield Select(PRIORITIES, value="medium", id="card-priority")
             with Vertical(id="modal-buttons"):
-                yield Button(
-                    "Create", variant="primary", id="btn-create"
-                )
+                yield Button("Create", variant="primary", id="btn-create")
                 yield Button("Cancel", id="btn-cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:

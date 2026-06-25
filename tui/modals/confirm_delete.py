@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from textual import work
-from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label
+
+if TYPE_CHECKING:
+    from textual.app import ComposeResult
 
 from tui.api_client import api_delete
 
@@ -16,9 +20,7 @@ class ConfirmDeleteModal(ModalScreen[bool]):
 
     BINDINGS = [("escape", "cancel", "Cancel")]
 
-    def __init__(
-        self, entity_type: str, entity_name: str, delete_path: str
-    ) -> None:
+    def __init__(self, entity_type: str, entity_name: str, delete_path: str) -> None:
         super().__init__()
         self._entity_type = entity_type
         self._entity_name = entity_name
@@ -28,14 +30,9 @@ class ConfirmDeleteModal(ModalScreen[bool]):
         """Build confirmation dialog."""
         with Vertical(id="modal-dialog"):
             yield Label(f"Delete {self._entity_type}", id="modal-title")
-            yield Label(
-                f"Are you sure you want to delete "
-                f"'{self._entity_name}'?"
-            )
+            yield Label(f"Are you sure you want to delete '{self._entity_name}'?")
             with Vertical(id="modal-buttons"):
-                yield Button(
-                    "Delete", variant="error", id="btn-delete"
-                )
+                yield Button("Delete", variant="error", id="btn-delete")
                 yield Button("Cancel", id="btn-cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -50,9 +47,7 @@ class ConfirmDeleteModal(ModalScreen[bool]):
         """Send delete request to API."""
         ok = await api_delete(self._delete_path)
         if ok:
-            self.notify(
-                f"{self._entity_type} '{self._entity_name}' deleted"
-            )
+            self.notify(f"{self._entity_type} '{self._entity_name}' deleted")
             self.dismiss(True)
         else:
             self.notify(

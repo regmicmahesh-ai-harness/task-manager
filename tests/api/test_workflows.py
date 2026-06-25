@@ -10,16 +10,12 @@ from httpx import AsyncClient
 
 async def _create_board(client: AsyncClient, name: str = "Sprint") -> dict:
     """Create a board and return its JSON response."""
-    resp = await client.post(
-        "/api/v1/boards", json={"name": name}
-    )
+    resp = await client.post("/api/v1/boards", json={"name": name})
     assert resp.status_code == 201
     return resp.json()
 
 
-async def _get_default_columns(
-    client: AsyncClient, board_id: str
-) -> list[dict]:
+async def _get_default_columns(client: AsyncClient, board_id: str) -> list[dict]:
     """Get the auto-created default columns for a board."""
     resp = await client.get(f"/api/v1/boards/{board_id}/lists")
     assert resp.status_code == 200
@@ -134,15 +130,11 @@ async def test_move_card_between_default_columns(
     assert resp.json()["list_id"] == in_prog["id"]
 
     # Verify it's no longer in To Do
-    todo_cards = await client.get(
-        "/api/v1/cards", params={"list_id": todo["id"]}
-    )
+    todo_cards = await client.get("/api/v1/cards", params={"list_id": todo["id"]})
     assert all(c["id"] != card_id for c in todo_cards.json())
 
     # Verify it's in In Progress
-    prog_cards = await client.get(
-        "/api/v1/cards", params={"list_id": in_prog["id"]}
-    )
+    prog_cards = await client.get("/api/v1/cards", params={"list_id": in_prog["id"]})
     assert any(c["id"] == card_id for c in prog_cards.json())
 
 
@@ -165,9 +157,7 @@ async def test_delete_card_from_column(client: AsyncClient) -> None:
     get_resp = await client.get(f"/api/v1/cards/{card_id}")
     assert get_resp.status_code == 404
 
-    list_resp = await client.get(
-        "/api/v1/cards", params={"list_id": cols[0]["id"]}
-    )
+    list_resp = await client.get("/api/v1/cards", params={"list_id": cols[0]["id"]})
     assert all(c["id"] != card_id for c in list_resp.json())
 
 
@@ -220,9 +210,7 @@ async def test_delete_column_cascades_cards(
     )
     card_id = card.json()["id"]
 
-    resp = await client.delete(
-        f"/api/v1/boards/{board_id}/lists/{col['id']}"
-    )
+    resp = await client.delete(f"/api/v1/boards/{board_id}/lists/{col['id']}")
     assert resp.status_code == 204
     assert (await client.get(f"/api/v1/cards/{card_id}")).status_code == 404
 

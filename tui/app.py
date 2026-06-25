@@ -12,19 +12,22 @@ Three-tier vim navigation:
 
 from __future__ import annotations
 
+import contextlib
 import os
 import subprocess
 import tempfile
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import yaml
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal
-from textual.events import Key
 from textual.widgets import Footer, Header, Label, Static
+
+if TYPE_CHECKING:
+    from textual.events import Key
 
 from tui.api_client import api_get, api_patch, api_post
 from tui.modals import (
@@ -157,19 +160,15 @@ class TaskManagerApp(App):
         """Switch to next/prev board and reload."""
         if not self._boards:
             return
-        self._board_index = (self._board_index + direction) % len(
-            self._boards
-        )
+        self._board_index = (self._board_index + direction) % len(self._boards)
         self._col_index = 0
         self._card_index = 0
         self.load_data()
 
     def _focus_board_selector(self) -> None:
         """Focus the board selector bar."""
-        try:
+        with contextlib.suppress(Exception):
             self.query_one("#board-label", BoardSelector).focus()
-        except Exception:
-            pass
 
     def _enter_column_level(self) -> None:
         """Dive from board into columns."""
@@ -193,9 +192,7 @@ class TaskManagerApp(App):
     def _get_columns(self) -> list[ListColumn]:
         """Get all ListColumn widgets in the board view."""
         try:
-            return list(
-                self.query_one("#board-view", BoardView).query(ListColumn)
-            )
+            return list(self.query_one("#board-view", BoardView).query(ListColumn))
         except Exception:
             return []
 
@@ -208,9 +205,7 @@ class TaskManagerApp(App):
         columns = self._get_columns()
         if not columns:
             return
-        self._col_index = max(
-            0, min(self._col_index + direction, len(columns) - 1)
-        )
+        self._col_index = max(0, min(self._col_index + direction, len(columns) - 1))
         self._focus_column_header()
 
     def _focus_column_header(self) -> None:
@@ -255,9 +250,7 @@ class TaskManagerApp(App):
         cards = self._get_cards_in_column(columns[self._col_index])
         if not cards:
             return
-        self._card_index = max(
-            0, min(self._card_index + direction, len(cards) - 1)
-        )
+        self._card_index = max(0, min(self._card_index + direction, len(cards) - 1))
         cards[self._card_index].focus()
 
     def _focus_current(self) -> None:
@@ -333,8 +326,7 @@ class TaskManagerApp(App):
         board_view.remove_children()
         board_view.mount(
             Label(
-                "Cannot connect to API\n\n"
-                "Start the server:\nuvicorn api.main:app --reload",
+                "Cannot connect to API\n\nStart the server:\nuvicorn api.main:app --reload",
                 id="no-connection",
             )
         )
@@ -373,9 +365,7 @@ class TaskManagerApp(App):
 
     # ── Card interactions (vim keys) ──────────────────────────
 
-    def on_card_widget_edit_requested(
-        self, event: CardWidget.EditRequested
-    ) -> None:
+    def on_card_widget_edit_requested(self, event: CardWidget.EditRequested) -> None:
         """Edit card via $EDITOR on a YAML temp file (k9s style)."""
         self._edit_card_in_editor(event.card_data)
 
@@ -388,9 +378,7 @@ class TaskManagerApp(App):
             "priority": card.get("priority", "medium"),
         }
         editor = os.environ.get("EDITOR", "vi")
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", prefix="task-card-", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", prefix="task-card-", delete=False) as tmp:
             yaml.dump(editable, tmp, default_flow_style=False)
             tmp_path = tmp.name
 
@@ -433,9 +421,7 @@ class TaskManagerApp(App):
         else:
             self.notify("Failed to update card", severity="error")
 
-    def on_card_widget_delete_requested(
-        self, event: CardWidget.DeleteRequested
-    ) -> None:
+    def on_card_widget_delete_requested(self, event: CardWidget.DeleteRequested) -> None:
         """Open delete confirmation when 'x' is pressed on a card."""
         card = event.card_data
         self.push_screen(
@@ -447,22 +433,16 @@ class TaskManagerApp(App):
             callback=self._on_modal_dismiss,
         )
 
-    def on_card_widget_move_left_requested(
-        self, event: CardWidget.MoveLeftRequested
-    ) -> None:
+    def on_card_widget_move_left_requested(self, event: CardWidget.MoveLeftRequested) -> None:
         """Move card to the previous (left) column."""
         self._move_card_direction(event.card_data, -1)
 
-    def on_card_widget_move_right_requested(
-        self, event: CardWidget.MoveRightRequested
-    ) -> None:
+    def on_card_widget_move_right_requested(self, event: CardWidget.MoveRightRequested) -> None:
         """Move card to the next (right) column."""
         self._move_card_direction(event.card_data, 1)
 
     @work
-    async def _move_card_direction(
-        self, card: dict[str, Any], direction: int
-    ) -> None:
+    async def _move_card_direction(self, card: dict[str, Any], direction: int) -> None:
         """Move a card left (-1) or right (+1) by one column."""
         current_list_id = card.get("list_id", "")
         col_ids = [lst["id"] for lst in self._current_lists]
@@ -533,9 +513,7 @@ class TaskManagerApp(App):
             return
         board = self._boards[self._board_index]
         self.push_screen(
-            ConfirmDeleteModal(
-                "Board", board["name"], f"/boards/{board['id']}"
-            ),
+            ConfirmDeleteModal("Board", board["name"], f"/boards/{board['id']}"),
             callback=self._on_modal_dismiss,
         )
 

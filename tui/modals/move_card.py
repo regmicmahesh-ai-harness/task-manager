@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from textual import work
-from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label, Select
+
+if TYPE_CHECKING:
+    from textual.app import ComposeResult
 
 from tui.api_client import api_post
 
@@ -31,11 +33,7 @@ class MoveCardModal(ModalScreen[bool]):
         """Build the move form."""
         title = self._card.get("title", "Untitled")
         current_list_id = self._card.get("list_id", "")
-        options = [
-            (lst["name"], lst["id"])
-            for lst in self._lists
-            if lst["id"] != current_list_id
-        ]
+        options = [(lst["name"], lst["id"]) for lst in self._lists if lst["id"] != current_list_id]
         with Vertical(id="modal-dialog"):
             yield Label(f"Move '{title}'", id="modal-title")
             yield Label("Target Column")

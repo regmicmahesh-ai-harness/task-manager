@@ -4,7 +4,7 @@ import contextlib
 
 from httpx import AsyncClient
 
-from shared.enums import CardPriority, DEFAULT_COLUMNS
+from shared.enums import DEFAULT_COLUMNS, CardPriority
 from shared.models import Board, Card, Label, List
 
 
