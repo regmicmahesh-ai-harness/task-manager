@@ -80,6 +80,25 @@ All under `/api/v1/`:
 | POST | `/cards/bulk` | Bulk move cards |
 | DELETE | `/cards/{id}` | Delete card |
 
+## Use as a Grok Skill
+
+Install the task manager as a Grok skill so any AI agent can manage tasks from any project:
+
+```bash
+# 1. Install the package
+uv pip install "task-manager @ git+https://github.com/regmicmahesh-ai-harness/task-manager.git"
+
+# 2. Copy the skill into your user skills directory
+mkdir -p ~/.grok/skills/task-manager
+curl -sL https://raw.githubusercontent.com/regmicmahesh-ai-harness/task-manager/main/.grok/skills/task-manager/SKILL.md \
+  -o ~/.grok/skills/task-manager/SKILL.md
+
+# 3. Start the API server
+uvicorn api.main:app --host 0.0.0.0 --port 8000 &
+```
+
+Once installed, use `/task-manager` in any Grok session or let it auto-trigger when you mention tasks, todos, boards, or cards.
+
 ## Development
 
 ```bash
