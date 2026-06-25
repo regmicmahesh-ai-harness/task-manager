@@ -10,9 +10,14 @@ description: >
 
 # Task Manager Skill
 
-You have access to a Trello-like task manager with boards, lists, and cards.
-Use the CLI commands below to manage tasks. The CLI is optimized for minimal
-token output.
+A Trello-like task manager with boards, lists (columns), and cards.
+Columns ARE the status — moving a card between columns changes its status.
+Creating a board auto-creates default columns: To Do, In Progress, Done.
+
+Three interfaces available:
+- **CLI** (`task`) — terse output optimized for AI agents
+- **TUI** (`task-tui`) — interactive vim-style terminal UI
+- **API** — Unix socket, no TCP port
 
 ## Setup
 
@@ -47,6 +52,14 @@ To verify the server is reachable:
 curl --unix-socket ~/.local/share/task-manager/task_manager.sock \
   http://localhost/api/v1/health
 ```
+
+## Entry Points
+
+| Command | Purpose |
+|---------|---------|
+| `task-server` | Start API server on Unix socket (run once, singleton) |
+| `task` | CLI for AI agents (terse tab-separated output) |
+| `task-tui` | Interactive terminal UI with vim-style navigation |
 
 ## CLI Reference
 
@@ -91,6 +104,39 @@ task card delete <card_id>                                         # Delete card
 - `--priority`: low, medium (default), high, urgent
 - `--labels`: Comma-separated labels, e.g. "bug,urgent"
 - `--description`: Task description text
+
+## TUI Reference
+
+Launch with `task-tui`. Keyboard-only, vim-style navigation. Arrow keys
+also work everywhere alongside hjkl.
+
+### Three-tier navigation
+
+| Level | h / ← | l / → | j / ↓ / Enter | k / ↑ / Esc |
+|-------|--------|-------|---------------|-------------|
+| **Board** | Prev board | Next board | Dive into columns | — |
+| **Column** | Prev column | Next column | Dive into cards | Back to board |
+| **Card** | — | — | Next card | Prev card (k/↑), Esc=back to column |
+
+### Card actions (when focused on a card)
+
+| Key | Action |
+|-----|--------|
+| `e` | Edit card via `$EDITOR` (opens YAML temp file, k9s style) |
+| `x` | Delete card (confirmation prompt) |
+| `m` then `h` | Move card to previous (left) column |
+| `m` then `l` | Move card to next (right) column |
+
+### Global shortcuts
+
+| Key | Action |
+|-----|--------|
+| `b` | Create new board |
+| `L` (shift) | Create new column in current board |
+| `c` | Create new card in current column |
+| `d` | Delete current board |
+| `r` | Refresh data |
+| `q` | Quit |
 
 ## Common Workflows
 
