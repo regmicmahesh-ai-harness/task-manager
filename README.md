@@ -82,14 +82,6 @@ All under `/api/v1/`:
 
 ## Use as a Grok Skill
 
-One-line install:
-
-```bash
-curl -sL https://raw.githubusercontent.com/regmicmahesh-ai-harness/task-manager/main/install-skill.sh | bash
-```
-
-Or manually:
-
 ```bash
 # 1. Install the package
 uv pip install "task-manager @ git+https://github.com/regmicmahesh-ai-harness/task-manager.git"
